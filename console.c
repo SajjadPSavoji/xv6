@@ -227,18 +227,35 @@ struct {
 void
 updatebuff(int c){
   int i = input.t;
-  for (;i>=input.e ; i--){
+  for (;i > input.e ; i--){
+    // consputc('^');
     input.buf[i % INPUT_BUF] = input.buf[(i-1) %INPUT_BUF];
   }
+  input.t++;
   input.buf[input.e % INPUT_BUF] = c;
+  // for (i = input.r ; i <= input.t ; i++)
+  // {
+  //   consputc(input.buf[i % INPUT_BUF]);
+  // }
 }
-void updatescreen(){
-  int i = input.e;
-  for(;i<= input.t;i++){
+void print_buff(){
+  int i = input.r;
+  for(;i< input.t;i++){
     consputc(input.buf[i % INPUT_BUF]);
   }
-  input.e ++;
   move_pointer(input.e - input.t);
+}
+void kill_line(){
+  int e = input.e;
+  int t = input.t;
+  move_pointer(t-e+1);
+      while(t != input.w &&
+            input.buf[(t-1) % INPUT_BUF] != '\n'){
+        // code added here ___________________________________________________________________________
+        t --;
+        // code ended here ___________________________________________________________________________
+        consputc(BACKSPACE);
+      }
 }
 // code ended here________________________________________________________________________________________
 
@@ -255,14 +272,15 @@ consoleintr(int (*getc)(void))
       doprocdump = 1;
       break;
     case C('U'):  // Kill line.
-      while(input.e != input.w &&
-            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
-        input.e--;
+      move_pointer(input.t-input.e);
+      while(input.t != input.w &&
+            input.buf[(input.t-1) % INPUT_BUF] != '\n'){
         // code added here ___________________________________________________________________________
         input.t --;
         // code ended here ___________________________________________________________________________
         consputc(BACKSPACE);
       }
+      input.e = input.t;
       break;
     case C('H'): case '\x7f':  // Backspaceinput
       if(input.e != input.w){
@@ -301,7 +319,9 @@ consoleintr(int (*getc)(void))
         else if (input.e < input.t )
         {
           updatebuff(c);
-          updatescreen();
+          kill_line();
+          print_buff();
+          input.e++;
         }
         else
         {
