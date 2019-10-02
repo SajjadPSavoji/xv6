@@ -225,7 +225,7 @@ struct {
 
 // code added here________________________________________________________________________________________
 void
-updatebuff(int c){
+insert_char_buff(int c){
   int i = input.t;
   for (;i > input.e ; i--){
     // consputc('^');
@@ -233,22 +233,26 @@ updatebuff(int c){
   }
   input.t++;
   input.buf[input.e % INPUT_BUF] = c;
-  // for (i = input.r ; i <= input.t ; i++)
-  // {
-  //   consputc(input.buf[i % INPUT_BUF]);
-  // }
+}
+void
+remove_char_buff(){
+    int i = input.e;
+    for (;i < input.t -1 ; i++){
+      input.buf[i % INPUT_BUF] = input.buf[(i+1) %INPUT_BUF];
+    }
+    input.t --;
 }
 void print_buff(){
   int i = input.r;
   for(;i< input.t;i++){
     consputc(input.buf[i % INPUT_BUF]);
   }
-  move_pointer(input.e - input.t);
+  move_pointer(input.e - input.t +1);
 }
 void kill_line(){
   int e = input.e;
   int t = input.t;
-  move_pointer(t-e+1);
+  move_pointer(t-e);
       while(t != input.w &&
             input.buf[(t-1) % INPUT_BUF] != '\n'){
         // code added here ___________________________________________________________________________
@@ -284,27 +288,26 @@ consoleintr(int (*getc)(void))
       break;
     case C('H'): case '\x7f':  // Backspaceinput
       if(input.e != input.w){
-        input.e--;
-        //code added here __sajjad ________________________________________________________________
-        input.t--;
-        // code ended here _________________________________________________________________________
-        consputc(BACKSPACE);
+        kill_line();
+        remove_char_buff();
+        print_buff();
+        // input.e--;
+        // //code added here __sajjad ________________________________________________________________
+        // input.t--;
+        // // code ended here _________________________________________________________________________
+        // consputc(BACKSPACE);
       }
       break;
     //code added here __sajad__ ____________________________________________________________________
     case '{':
-       while(input.e != input.w &&
-            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
-        input.e--;
-        move_pointer(-1);
-      }
+      move_pointer(input.r - input.e);
+      input.e = input.r;
       break;
 
     case '}':
-      if(1){
-        move_pointer(input.t - input.e);
-        input.e = input.t;
-      }
+      
+      move_pointer(input.t - input.e);
+      input.e = input.t;
       break; 
     //code ended here________________________________________________________________________________
     default:
@@ -318,7 +321,7 @@ consoleintr(int (*getc)(void))
         }
         else if (input.e < input.t )
         {
-          updatebuff(c);
+          insert_char_buff(c);
           kill_line();
           print_buff();
           input.e++;
