@@ -21,6 +21,9 @@ main(void)
 
   for(;;){
     printf(1, "init: starting sh\n");
+    // code added here __sajjad___________________________________________________________________________
+    printf(1,"sina sharifi and sajjad p savoji\n");
+    // code ended here____________________________________________________________________________________
     pid = fork();
     if(pid < 0){
       printf(1, "init: fork failed\n");
