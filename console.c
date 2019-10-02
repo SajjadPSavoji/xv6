@@ -175,8 +175,12 @@ cgaputc(int c)
   else if(c == BACKSPACE){
     if(pos > 0) --pos;
   } else
-    crt[pos++] = (c&0xff) | 0x0700;  // black on white
-
+    // code added here__________________________________________________________________________________
+    if(c == '$')
+      crt[pos++] = (c&0xff) | 0x0200;  // black on white
+    else
+      crt[pos++] = (c&0xff) | 0x0700;  // black on white
+    //code ended here __________________________________________________________________________________ 
   if(pos < 0 || pos > 25*80)
     panic("pos under/overflow");
 
@@ -301,6 +305,20 @@ consoleintr(int (*getc)(void))
       }
       break;
     //code added here __sajad__ ____________________________________________________________________
+    case 229 : //right arrow
+      if(input.e == input.t)
+        break;
+      move_pointer(+1);
+      input.e ++;
+      break;
+
+    case 228 : //left arrow
+      if(input.e == input.r)
+        break;
+      move_pointer(-1);
+      input.e --;
+      break;
+
     case '{':
       move_pointer(input.r - input.e);
       input.e = input.r;
