@@ -15,6 +15,7 @@
 #include "proc.h"
 #include "x86.h"
 
+
 static void consputc(int);
 
 static int panicked = 0;
@@ -128,6 +129,36 @@ panic(char *s)
 #define CRTPORT 0x3d4
 static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
 
+
+// code added here ___sajjad____________________________________________________________________________
+static void
+move_pointer(int offset)
+{
+  int pos;
+
+  // Cursor position: col + 80*row.
+  outb(CRTPORT, 14);
+  pos = inb(CRTPORT+1) << 8;
+  outb(CRTPORT, 15);
+  pos |= inb(CRTPORT+1);
+
+  pos += offset;
+
+  if(pos < 0 || pos > 25*80)
+    panic("pos under/overflow");
+
+  if((pos/80) >= 24){  // Scroll up.
+    memmove(crt, crt+80, sizeof(crt[0])*23*80);
+    pos -= 80;
+    memset(crt+pos, 0, sizeof(crt[0])*(24*80 - pos));
+  }
+
+  outb(CRTPORT, 14);
+  outb(CRTPORT+1, pos>>8);
+  outb(CRTPORT, 15);
+  outb(CRTPORT+1, pos);
+}
+// code ended here_______________________________________________________________________________________
 static void
 cgaputc(int c)
 {
@@ -173,7 +204,8 @@ consputc(int c)
 
   if(c == BACKSPACE){
     uartputc('\b'); uartputc(' '); uartputc('\b');
-  } else
+  }
+  else
     uartputc(c);
   cgaputc(c);
 }
@@ -184,6 +216,9 @@ struct {
   uint r;  // Read index
   uint w;  // Write index
   uint e;  // Edit index
+  // code added here __sajjad_____________________________________________________________________________
+  uint t; // tah of line index
+  // code ended here_______________________________________________________________________________________
 } input;
 
 #define C(x)  ((x)-'@')  // Control-x
@@ -207,16 +242,39 @@ consoleintr(int (*getc)(void))
         consputc(BACKSPACE);
       }
       break;
-    case C('H'): case '\x7f':  // Backspace
+    case C('H'): case '\x7f':  // Backspaceinput
       if(input.e != input.w){
         input.e--;
+        //code added here __sajjad ________________________________________________________________
+        input.t--;
+        // code ended here _________________________________________________________________________
         consputc(BACKSPACE);
       }
       break;
+    //code added here __sajad__ ____________________________________________________________________
+    case '{':
+       while(input.e != input.w &&
+            input.buf[(input.e-1) % INPUT_BUF] != '\n'){
+        input.e--;
+        move_pointer(-1);
+      }
+      break;
+
+    case '}':
+      if(1){
+        move_pointer(input.t - input.e);
+        input.e = input.t;
+      }
+      break; 
+    //code ended here________________________________________________________________________________
     default:
       if(c != 0 && input.e-input.r < INPUT_BUF){
         c = (c == '\r') ? '\n' : c;
         input.buf[input.e++ % INPUT_BUF] = c;
+        //code added here __sajad_____________________________________________________________________
+        if(input.e > input.t)
+          input.t = input.e;
+        // code ended here____________________________________________________________________________
         consputc(c);
         if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
           input.w = input.e;
