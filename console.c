@@ -236,18 +236,18 @@ insert_char_buff(int c){
 }
 void
 remove_char_buff(){
-    int i = input.e;
-    for (;i < input.t -1 ; i++){
-      input.buf[i % INPUT_BUF] = input.buf[(i+1) %INPUT_BUF];
+    int i = input.e-1;
+    for (;i < input.t-1 ; i++){
+      input.buf[(i) % INPUT_BUF] = input.buf[(i+1) %INPUT_BUF];
     }
-    input.t --;
+    // input.t --;
 }
 void print_buff(){
   int i = input.r;
   for(;i< input.t;i++){
     consputc(input.buf[i % INPUT_BUF]);
   }
-  move_pointer(input.e - input.t +1);
+  move_pointer(input.e - input.t);
 }
 void kill_line(){
   int e = input.e;
@@ -275,7 +275,7 @@ consoleintr(int (*getc)(void))
       // procdump() locks cons.lock indirectly; invoke later
       doprocdump = 1;
       break;
-    case C('U'):  // Kill line.
+    case C('U'): case C('C'): // Kill line.
       move_pointer(input.t-input.e);
       while(input.t != input.w &&
             input.buf[(input.t-1) % INPUT_BUF] != '\n'){
@@ -288,10 +288,12 @@ consoleintr(int (*getc)(void))
       break;
     case C('H'): case '\x7f':  // Backspaceinput
       if(input.e != input.w){
-        kill_line();
         remove_char_buff();
+        kill_line();
+        input.t--;
+        input.e--;
         print_buff();
-        // input.e--;
+
         // //code added here __sajjad ________________________________________________________________
         // input.t--;
         // // code ended here _________________________________________________________________________
@@ -314,6 +316,9 @@ consoleintr(int (*getc)(void))
       if(c != 0 && input.t-input.r < INPUT_BUF){
         c = (c == '\r') ? '\n' : c;
         //code added here __sajad_____________________________________________________________________
+        if(c == '\n')
+          input.e = input.t;
+
         if(input.t == input.e){
           input.buf[input.e++ % INPUT_BUF] = c;
           input.t = input.e;
@@ -323,8 +328,8 @@ consoleintr(int (*getc)(void))
         {
           insert_char_buff(c);
           kill_line();
-          print_buff();
           input.e++;
+          print_buff();
         }
         else
         {
