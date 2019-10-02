@@ -223,6 +223,25 @@ struct {
 
 #define C(x)  ((x)-'@')  // Control-x
 
+// code added here________________________________________________________________________________________
+void
+updatebuff(int c){
+  int i = input.t;
+  for (;i>=input.e ; i--){
+    input.buf[i % INPUT_BUF] = input.buf[(i-1) %INPUT_BUF];
+  }
+  input.buf[input.e % INPUT_BUF] = c;
+}
+void updatescreen(){
+  int i = input.e;
+  for(;i<= input.t;i++){
+    consputc(input.buf[i % INPUT_BUF]);
+  }
+  input.e ++;
+  move_pointer(input.e - input.t);
+}
+// code ended here________________________________________________________________________________________
+
 void
 consoleintr(int (*getc)(void))
 {
@@ -239,6 +258,9 @@ consoleintr(int (*getc)(void))
       while(input.e != input.w &&
             input.buf[(input.e-1) % INPUT_BUF] != '\n'){
         input.e--;
+        // code added here ___________________________________________________________________________
+        input.t --;
+        // code ended here ___________________________________________________________________________
         consputc(BACKSPACE);
       }
       break;
@@ -268,18 +290,29 @@ consoleintr(int (*getc)(void))
       break; 
     //code ended here________________________________________________________________________________
     default:
-      if(c != 0 && input.e-input.r < INPUT_BUF){
+      if(c != 0 && input.t-input.r < INPUT_BUF){
         c = (c == '\r') ? '\n' : c;
-        input.buf[input.e++ % INPUT_BUF] = c;
         //code added here __sajad_____________________________________________________________________
-        if(input.e > input.t)
+        if(input.t == input.e){
+          input.buf[input.e++ % INPUT_BUF] = c;
           input.t = input.e;
-        // code ended here____________________________________________________________________________
-        consputc(c);
-        if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
-          input.w = input.e;
+          consputc(c);
+        }
+        else if (input.e < input.t )
+        {
+          updatebuff(c);
+          updatescreen();
+        }
+        else
+        {
+          consputc('!');
+        }
+        
+        if(c == '\n' || c == C('D') || input.t == input.r+INPUT_BUF){
+          input.w = input.t;
           wakeup(&input.r);
         }
+        // code ended here____________________________________________________________________________
       }
       break;
     }
