@@ -8,14 +8,20 @@ void
 signle_argument(char* argv[]){
     int fd2;
     int n;
-    if ((fd2 = open(argv[1] , O_WRONLY) )< 0){
-        fd2 = open(argv[1] , O_CREATE);
+
+    unlink(argv[1]);
+    if ((fd2 = open(argv[1] , O_CREATE) )< 0){
+        printf(2, "cpt file creation error");
+        exit();
+    }
+    else{
         close(fd2);
         if((fd2 = open(argv[1] , O_WRONLY)) < 0){
             printf(2,"cpt:after creation of file , write error\n");
+            exit();
         }
     }
-    while((n = read(1, buf, sizeof(buf))) > 0) {
+    if((n = read(1, buf, sizeof(buf))) > 0) {
         if (write(fd2, buf, n) != n) {
             printf(1, "cpt: write error\n");
             close(fd2);
@@ -33,14 +39,16 @@ void
 double_argument(char* argv[]){
     int fd1 , fd2;
     int n;
+
     fd1 = open(argv[1] , O_RDONLY);
-    if ((fd2 = open(argv[2] , O_WRONLY) )< 0){
-        fd2 = open(argv[2] , O_CREATE);
-        close(fd2);
-        if((fd2 = open(argv[2] , O_WRONLY)) < 0){
-            printf(2,"cpt:after creation of file , write error\n");
-        }
+    unlink(argv[2]);
+    fd2 = open(argv[2] , O_CREATE);
+    close(fd2);
+    if((fd2 = open(argv[2] , O_WRONLY)) < 0){
+        printf(2,"cpt:after creation of file , write error\n");
+        exit();
     }
+ 
     while((n = read(fd1, buf, sizeof(buf))) > 0) {
         if (write(fd2, buf, n) != n) {
             printf(1, "cpt: write error\n");
