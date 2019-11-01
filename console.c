@@ -305,7 +305,7 @@ consoleintr(int (*getc)(void))
       }
       break;
     //code added here __sajad__ ____________________________________________________________________
-    case 229 : //right arrow
+    case 229 : //right arrowg
       if(input.e == input.t)
         break;
       move_pointer(+1);
