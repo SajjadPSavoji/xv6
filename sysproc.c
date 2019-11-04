@@ -76,6 +76,22 @@ sys_sleep(void)
   release(&tickslock);
   return 0;
 }
+/////////
+int
+sys_sina(void)
+{
+  struct file *f;
+  f=myproc()->ofile[0];
+  return filewrite(f,  "sina\n", sizeof("sina\n"));
+}
+
+int
+sys_count_num_of_digits(void)
+{
+  struct file *f;
+  f=myproc()->ofile[0];
+  return filewrite(f,  "sajjad\n", sizeof("sajjad\n"));
+}
 
 // return how many clock tick interrupts have occurred
 // since start.

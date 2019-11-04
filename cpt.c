@@ -82,5 +82,6 @@ main(int argc, char *argv[])
         printf(2,"cpt takes at most 2 args");
         break;
     }
+    sina();
     exit();
 }
