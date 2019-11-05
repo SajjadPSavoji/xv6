@@ -88,7 +88,7 @@ sys_sina(void)
 int
 sys_count_num_of_digits(void)
 {
-  short int n;
+  unsigned short int n;
   int num_of_digits = 1;
   char temp;
   struct file *f;
