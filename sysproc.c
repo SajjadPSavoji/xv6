@@ -88,31 +88,26 @@ sys_sina(void)
 int
 sys_count_num_of_digits(void)
 {
-  long int n;
-  // int num_of_digits = 1;
+  short int n;
+  int num_of_digits = 1;
   char temp;
-
-  // if(argint(0, &n) < 0)
-  //   return -1;
-
-  asm volatile("movl %%ecx, %0" : "=r" (n));
-
-  // while(1)
-  // {
-  //   n = n/10;
-  //   if((n) > 0)
-  //   {
-  //     num_of_digits++;
-  //   }
-  //   else
-  //     break;
-    
-  // }
-  // temp = '0' + num_of_digits;
-  temp = '0' + n;
-
   struct file *f;
-  f=myproc()->ofile[0];
+  f=myproc()->ofile[1];
+
+  asm volatile("movl %%si, %0" : "=r" (n));
+
+  while(1)
+  {
+    n = n/10;
+    if((n) > 0)
+    {
+      num_of_digits++;
+    }
+    else
+      break;
+  }
+  temp = '0' + num_of_digits;
+  
   filewrite(f,  &temp, sizeof(temp));
   return 1;
 }
