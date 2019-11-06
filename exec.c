@@ -35,12 +35,12 @@ str_cat(char** str, char* a, char* b, int c)
 int
 exec(char *path, char **argv)
 {
-  for(int j=0; j<2; j++)
+  for(int j=0; j<=MAX_PATHS; j++)
   {
     char *s, *last;
     int i, off;
-    char str[20] = {0};////////
-    char* b = str;///////
+    char str[20] = {0};
+    char* b = str;
     uint argc, sz, sp, ustack[3+MAXARG+1];
     struct elfhdr elf;
     struct inode *ip;
@@ -51,21 +51,12 @@ exec(char *path, char **argv)
     if(j == 0)
       str_cat(&b, "", path, 0);
     else
-      str_cat(&b, "/", path, 1);
-    
-    // struct file *f;
-    // f=myproc()->ofile[0];
-    // filewrite(f,  path, strlen(path));
-    // filewrite(f,  "\n", sizeof("\n"));
-    // filewrite(f,  b, 20);
-    // filewrite(f,  "\n", sizeof("\n"));
-   
-   
-    begin_op();
+      str_cat(&b, Path[j-1], path, 1);
 
+    begin_op();
+    
     if((ip = namei(b)) == 0){
       end_op();
-      cprintf("exec: fail\n");
       continue;
     }
     ilock(ip);
