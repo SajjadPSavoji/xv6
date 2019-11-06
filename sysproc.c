@@ -7,9 +7,6 @@
 #include "mmu.h"
 #include "proc.h"
 
-#define MAX_PATH 10
-extern char* Path[MAX_PATH];
-
 int
 sys_fork(void)
 {
@@ -120,9 +117,47 @@ sys_count_num_of_digits(void)
 int
 sys_set_path(void)
 {
+  // file to print stuff in console
   struct file *f;
-  f=myproc()->ofile[0];
-  return filewrite(f,  "sina\n", sizeof("sina\n"));
+  f=myproc()->ofile[2];
+  // clear up all prev paths
+  for (int i = 0; i < MAX_PATHS; i++)
+  {
+    for (int j = 0; j < MAX_PATH; j++)
+    {
+      Path[i][j] = NULL;
+    }
+  }
+
+  // read string passed to set path from stack
+  char* new_paths;
+  if(argstr(0 , &new_paths) < 0)
+    return filewrite(f,  "str read in kernel error\n", 25);
+
+  // good to go
+  // parse paths and add new path
+  char* cur = new_paths;
+  int path_num = 0;
+  int path_idx = 0;
+  for (int chert = 0 ; chert <= strlen(new_paths); chert++)
+  {
+    if(cur[0] == DELIM){
+      Path[path_num][path_idx] = NULL;
+      path_num ++;
+      path_idx = 0;
+      cur ++;
+      continue;
+    }
+    Path[path_num][path_idx] = cur[0];
+    cur++;
+    path_idx++;
+  }
+  // print Path for test
+  // for (int i = 0; i < MAX_PATHS; i++)
+  // {
+  //   filewrite(f,  Path[i], 10);
+  // }
+  return 1;
 }
 
 // return how many clock tick interrupts have occurred

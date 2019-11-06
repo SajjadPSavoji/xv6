@@ -188,3 +188,10 @@ void            clearpteu(pde_t *pgdir, char *uva);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
+
+// defines for system call set_path
+#define MAX_PATHS 10
+#define MAX_PATH  10
+#define NULL 0
+#define DELIM ':'
+char Path[MAX_PATHS][MAX_PATH];
