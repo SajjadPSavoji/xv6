@@ -7,6 +7,9 @@
 #include "mmu.h"
 #include "proc.h"
 
+#define MAX_PATH 10
+extern char* Path[MAX_PATH];
+
 int
 sys_fork(void)
 {
@@ -112,6 +115,14 @@ sys_count_num_of_digits(void)
   filewrite(f,  &temp, sizeof(temp));
   filewrite(f,  "\n", sizeof("\n"));
   return 1;
+}
+
+int
+sys_set_path(void)
+{
+  struct file *f;
+  f=myproc()->ofile[0];
+  return filewrite(f,  "sina\n", sizeof("sina\n"));
 }
 
 // return how many clock tick interrupts have occurred
