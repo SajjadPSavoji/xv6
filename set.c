@@ -7,11 +7,12 @@
 int
 main(int argc, char *argv[])
 {
-    // char* paths[10];
     if(argc < 2)
     {
         printf(2, "misssing argument\n");
         exit();
     }
 
+    set_path(argv[1]);
+    exit();
 }

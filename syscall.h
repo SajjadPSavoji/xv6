@@ -22,3 +22,4 @@
 #define SYS_close  21
 #define SYS_sina   22
 #define SYS_count_num_of_digits 23
+#define SYS_set_path 24
