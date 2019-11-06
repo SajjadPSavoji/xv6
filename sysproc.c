@@ -160,6 +160,35 @@ sys_set_path(void)
   return 1;
 }
 
+int
+sys_dream(void)
+{
+  int n;
+  uint ticks0;
+
+  if(argint(0, &n) < 0)
+    return -1;
+  acquire(&tickslock);
+  ticks0 = ticks;
+  while(ticks - ticks0 < n){
+    if(myproc()->killed){
+      release(&tickslock);
+      return -1;
+    }
+    sleep(&ticks, &tickslock);
+  }
+  release(&tickslock);
+  return 0;
+}
+
+int
+sys_get_time(void)
+{
+  struct rtcdate t1;
+  cmostime(&t1);
+  return t1.second;
+}
+
 // return how many clock tick interrupts have occurred
 // since start.
 int

@@ -23,3 +23,5 @@
 #define SYS_sina   22
 #define SYS_count_num_of_digits 23
 #define SYS_set_path 24
+#define SYS_dream  25
+#define SYS_get_time 26
