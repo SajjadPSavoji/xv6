@@ -88,13 +88,13 @@ sys_sina(void)
 int
 sys_count_num_of_digits(void)
 {
-  short int n;
+  int n;
   int num_of_digits = 1;
   char temp;
   struct file *f;
   f=myproc()->ofile[1];
 
-  asm volatile("movl %%si, %0" : "=r" (n));
+  asm volatile("movl %%esi, %0" : "=r" (n));
 
   while(1)
   {
