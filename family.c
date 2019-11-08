@@ -4,13 +4,15 @@
 #include "fs.h"
 #include "fcntl.h"
 
-#define MAX_CHILD 5
+#define MAX_CHILD 3
+#define WITH_GDC 1
+#define NO_GDC 0
 
 int
 main(int argc, char *argv[])
 {
     int num;
-    int my_pid;
+    int my_pid, pid1;
     int pid[MAX_CHILD];
   
 
@@ -23,28 +25,39 @@ main(int argc, char *argv[])
         if(pid[num] == 0)
         {
             printf(1, "My Pid is : %d \n My father's Pid is : %d \n", getpid(), get_parent());
-            if(num)
-                break;
-            // fork();
-            // break;
-
+            break;
         }
         else
-            if(my_pid == getpid())
-                sleep(10);
-            else
-                break;
-            
-        
+            sleep(10);
     }
-    if(my_pid == getpid())
+    dream(1);
+
+    if(5 == getpid())
     {
-        printf(1, "\n My children are : %d \n",get_child(my_pid));  
-        printf(1, "\n My children are : %d \n",get_child(4));
+        printf(1, "\n");
+        for(num = 0; num < MAX_CHILD; num++)
+        {
+            pid1 = fork();
+            if(pid1 == 0)
+            {
+                printf(1, "My Pid is : %d \n My father's Pid is : %d \n", getpid(), get_parent());
+                break;
+            }
+            else
+                sleep(10);
+        }
     }
-    if(4 == getpid())
+    dream(1);
+    if(my_pid == getpid())
+        printf(1, "\nMy children are : %d \n\n ", get_child(my_pid , NO_GDC));
+
+    if(my_pid == getpid())
+        printf(1, "My children are : %d \n ", get_child(my_pid , WITH_GDC));
+
+    for (num = 0; num < MAX_CHILD; num++)
+    {
         wait();
-    for(num = 0; num < MAX_CHILD; num++)
-        wait();
+    }
+    
     exit();
 }

@@ -569,8 +569,9 @@ my_childs(int root)
   return childs;
 }
 
-void ptree(int root , int indent)
+void ptree(int root , int indent , int* rep)
 {
+  (*rep) = (*rep)*TEN + root;
   for (int i = 0; i < indent; i++)
   {
     cprintf("-");
@@ -581,7 +582,7 @@ void ptree(int root , int indent)
   {
     if(ptable.proc[i].parent->pid == root)
     {
-      ptree(ptable.proc[i].pid , indent + 3);
+      ptree(ptable.proc[i].pid , indent + 3 , rep);
     }
   }
 }

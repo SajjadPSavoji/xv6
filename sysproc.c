@@ -204,9 +204,16 @@ sys_get_time(void)
 int sys_get_child(void)
 {
   int root;
+  int mode;
+  int rep = 0;
   if(argint(0, &root) < 0)
     return -1;
-  ptree(root , 0);
+  if(argint(1, &mode) < 0)
+    return -1;
+  if(mode){
+    ptree(root , 0 , &rep);
+    return rep;
+  }
   return my_childs(root);
 }
 
