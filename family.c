@@ -21,11 +21,30 @@ main(int argc, char *argv[])
     {
         pid[num] = fork();
         if(pid[num] == 0)
+        {
             printf(1, "My Pid is : %d \n My father's Pid is : %d \n", getpid(), get_parent());
+            if(num)
+                break;
+            // fork();
+            // break;
+
+        }
+        else
+            if(my_pid == getpid())
+                sleep(10);
+            else
+                break;
+            
+        
     }
-
     if(my_pid == getpid())
-        printf(1, "\n My children are : %d \n",get_childrem(my_pid));
-
+    {
+        printf(1, "\n My children are : %d \n",get_child(my_pid));  
+        printf(1, "\n My children are : %d \n",get_child(4));
+    }
+    if(4 == getpid())
+        wait();
+    for(num = 0; num < MAX_CHILD; num++)
+        wait();
     exit();
 }

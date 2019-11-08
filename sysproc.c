@@ -206,7 +206,8 @@ int sys_get_child(void)
   int root;
   if(argint(0, &root) < 0)
     return -1;
-  return 0;
+  ptree(root , 0);
+  return my_childs(root);
 }
 
 int sys_get_parent(void)

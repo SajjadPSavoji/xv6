@@ -543,7 +543,45 @@ my_parent(void)
   // get your proc struc
   par = (myproc()->parent)->pid;
   // release ptable lock
-  acquire(&ptable.lock);
+  release(&ptable.lock);
   // return pid of parent
   return par;
+}
+
+int
+my_childs(int root)
+{
+  int childs = 0;
+  // acquier ptable lock
+  acquire(&ptable.lock);
+  // for over ptable and find any child that it's parent is root
+  for (int i = 0; i <NPROC ; i++)
+  {
+    if(ptable.proc[i].parent->pid == root)
+    {
+      childs  = TEN * childs + ptable.proc[i].pid;
+    }
+  }
+  
+  // release ptable lock
+  release(&ptable.lock);
+  // return the int representation of children
+  return childs;
+}
+
+void ptree(int root , int indent)
+{
+  for (int i = 0; i < indent; i++)
+  {
+    cprintf("-");
+  }
+  cprintf("%d" , root);
+  cprintf("\n");
+  for (int i = 0; i <NPROC ; i++)
+  {
+    if(ptable.proc[i].parent->pid == root)
+    {
+      ptree(ptable.proc[i].pid , indent + 3);
+    }
+  }
 }

@@ -28,7 +28,7 @@ int count_num_of_digits(int);
 int set_path(char*);
 int dream(int);
 int get_time(void);
-int get_child(void);
+int get_child(int);
 int get_parent(void);
 
 // ulib.c

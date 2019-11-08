@@ -197,4 +197,8 @@ void            clearpteu(pde_t *pgdir, char *uva);
 char Path[MAX_PATHS][MAX_PATH];
 
 // for get_parent and get_child systemcalls
-int            my_parent(void);
+int             my_parent(void);
+int             my_childs(int);
+void            ptree(int , int);
+
+#define TEN 10
