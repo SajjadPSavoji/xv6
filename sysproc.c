@@ -76,7 +76,18 @@ sys_sleep(void)
   release(&tickslock);
   return 0;
 }
-/////////
+// return how many clock tick interrupts have occurred
+// since start.
+int
+sys_uptime(void)
+{
+  uint xticks;
+
+  acquire(&tickslock);
+  xticks = ticks;
+  release(&tickslock);
+  return xticks;
+}
 int
 sys_sina(void)
 {
@@ -84,7 +95,7 @@ sys_sina(void)
   f=myproc()->ofile[0];
   return filewrite(f,  "sina\n", sizeof("sina\n"));
 }
-
+// post-defined systemcalls
 int
 sys_count_num_of_digits(void)
 {
@@ -190,15 +201,17 @@ sys_get_time(void)
   return t1.second;
 }
 
-// return how many clock tick interrupts have occurred
-// since start.
-int
-sys_uptime(void)
+int sys_get_child(void)
 {
-  uint xticks;
-
-  acquire(&tickslock);
-  xticks = ticks;
-  release(&tickslock);
-  return xticks;
+  int root;
+  if(argint(0, &root) < 0)
+    return -1;
+  return 0;
 }
+
+int sys_get_parent(void)
+{
+  return my_parent();
+}
+
+

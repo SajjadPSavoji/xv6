@@ -195,3 +195,6 @@ void            clearpteu(pde_t *pgdir, char *uva);
 #define NULL 0
 #define DELIM ':'
 char Path[MAX_PATHS][MAX_PATH];
+
+// for get_parent and get_child systemcalls
+int            my_parent(void);

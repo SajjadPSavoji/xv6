@@ -532,3 +532,18 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+// POSt declared systemcalls
+int
+my_parent(void)
+{
+  int par = -1;
+  // acquier ptable lock
+  acquire(&ptable.lock);
+  // get your proc struc
+  par = (myproc()->parent)->pid;
+  // release ptable lock
+  acquire(&ptable.lock);
+  // return pid of parent
+  return par;
+}

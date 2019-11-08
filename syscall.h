@@ -25,3 +25,5 @@
 #define SYS_set_path 24
 #define SYS_dream  25
 #define SYS_get_time 26
+#define SYS_get_child 27
+#define SYS_get_parent 28

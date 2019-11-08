@@ -108,6 +108,8 @@ extern int sys_count_num_of_digits(void);
 extern int sys_set_path(void);
 extern int sys_dream(void);
 extern int sys_get_time(void);
+extern int sys_get_child(void);
+extern int sys_get_parent(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -136,6 +138,8 @@ static int (*syscalls[])(void) = {
 [SYS_set_path] sys_set_path,
 [SYS_dream] sys_dream,
 [SYS_get_time] sys_get_time,
+[SYS_get_child] sys_get_child,
+[SYS_get_parent] sys_get_parent,
 };
 
 void
