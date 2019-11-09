@@ -185,11 +185,10 @@ sys_dream(void)
   release(&tickslock);
   
   while(ticks - ticks0 < n){
+    //works like sti
     if(myproc()->killed){
-      // release(&tickslock);
       return -1;
     }
-    // sleep(&ticks, &tickslock);
   }
   return 0;
 }
