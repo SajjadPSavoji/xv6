@@ -179,9 +179,11 @@ sys_dream(void)
 
   if(argint(0, &n) < 0)
     return -1;
-  // acquire(&tickslock);
+  acquire(&tickslock);
   n = n* 100;
   ticks0 = ticks;
+  release(&tickslock);
+  
   while(ticks - ticks0 < n){
     if(myproc()->killed){
       // release(&tickslock);
@@ -189,7 +191,6 @@ sys_dream(void)
     }
     // sleep(&ticks, &tickslock);
   }
-  // release(&tickslock);
   return 0;
 }
 
