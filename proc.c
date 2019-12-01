@@ -215,6 +215,12 @@ fork(void)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
+  //now changing ------------------------------
+  np->q_num = 2;
+  np->n_ticket = 1;
+  np->n_cycle = 1;
+  np->en_time = ticks;
+  np->rp = 1;
 
   release(&ptable.lock);
 

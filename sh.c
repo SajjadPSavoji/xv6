@@ -165,7 +165,10 @@ main(void)
       continue;
     }
     if(fork1() == 0)
+    {
+      //system call ... to change q_num-------------------------
       runcmd(parsecmd(buf));
+    }
     wait();
   }
   exit();
