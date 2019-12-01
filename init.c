@@ -20,6 +20,7 @@ main(void)
   dup(0);  // stderr
 
   for(;;){
+    printf(1, "we will we will rock you. from sina and sajjad :)))\n");
     printf(1, "init: starting sh\n");
     pid = fork();
     if(pid < 0){
