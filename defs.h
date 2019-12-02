@@ -16,6 +16,9 @@ void            change_q(int, int);
 void            change_rp(int, int);
 void            change_ticket(int, int);
 float           hrrn(struct proc *);
+int             len_int(int);
+void            print_space(int);
+void            print_proc(struct proc*);
 
 #define MAX_NAME_LEN 16
 #define MAX_PID_LEN 4
