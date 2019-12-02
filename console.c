@@ -25,6 +25,35 @@ static struct {
 } cons;
 
 static void
+printfloat(int xx, int base, int sign)
+{
+  static char digits[] = "0123456789abcdef";
+  char buf[16];
+  int i;
+  uint x;
+
+  if(sign && (sign = xx < 0))
+    x = -xx;
+  else
+    x = xx;
+
+  i = 0;
+  do{
+    buf[i++] = digits[x % base];
+  }while((x /= base) != 0);
+
+  if(sign)
+    buf[i++] = '-';
+
+  while(--i >= 0)
+  {
+    if(i==0)
+      consputc('.');
+    consputc(buf[i]);
+  }
+}
+
+static void
 printint(int xx, int base, int sign)
 {
   static char digits[] = "0123456789abcdef";
@@ -87,6 +116,9 @@ cprintf(char *fmt, ...)
         s = "(null)";
       for(; *s; s++)
         consputc(*s);
+      break;
+    case 'f':
+      printfloat(*argp++, 10, 1);
       break;
     case '%':
       consputc('%');

@@ -600,6 +600,41 @@ change_ticket(int pid, int n)
     }
   release(&ptable.lock);
 }
+
+void print_head()
+{
+  // name
+  cprintf("%s" , "name");
+  print_space(MAX_NAME_LEN + MARGIN_LEN - strlen("name"));
+  // pid
+  cprintf("%s" ,"pid" );
+  print_space(MAX_PID_LEN + MARGIN_LEN - strlen("pid"));
+  // state
+  cprintf("%s" ,"state");
+  print_space(MAX_STATE_LEN + MARGIN_LEN - strlen("state"));
+  // q_num
+  cprintf("%s" , "q");
+  print_space(MAX_PR_LEN + MARGIN_LEN - strlen("q"));
+  // creat time
+  cprintf("%s" , "en time");
+  print_space(MAX_EN_TIME_LEN + MARGIN_LEN - strlen("en time"));
+  // number of tickets
+  cprintf("%s" , "tickets");
+  print_space(MAX_TICKET_LEN + MARGIN_LEN - strlen("tickets"));
+  // number of cycles 
+  cprintf("%s" , "cycles");
+  print_space(MAX_CYCLE_LEN + MARGIN_LEN - strlen("cycles"));
+  // HRRN
+  cprintf("%s" , "hrrn");
+  print_space(MAX_HRRN_LEN + MARGIN_LEN - strlen("hrrn"));
+  cprintf("\n");
+  for (int i = 0; i < SUM_ALL_LEN; i++)
+  {
+    cprintf("-");
+  }
+  cprintf("\n");
+}
+
 void print_proc(struct proc* p)
 {
   // name
@@ -624,7 +659,7 @@ void print_proc(struct proc* p)
   cprintf("%d" , p->n_cycle);
   print_space(MAX_CYCLE_LEN + MARGIN_LEN - len_int(p->n_cycle));
   // HRRN
-  float h = hrrn(p);
+  int h = hrrn(p);
   cprintf("%f" , h);
   print_space(MAX_HRRN_LEN + MARGIN_LEN - len_int(h));
   cprintf("\n");
@@ -652,9 +687,8 @@ int len_int(int i)
   return c;
 }
 
-float hrrn(struct proc * p)
+int hrrn(struct proc * p)
 {
-  float hrrn;
-  hrrn = ((float)ticks - p->en_time) / ((float)p->n_cycle);
-  return hrrn;
+  return (int)((float)((ticks - p->en_time)*10)/ (float)(p->n_cycle));
+
 }

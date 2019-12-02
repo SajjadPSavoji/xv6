@@ -15,10 +15,11 @@ void            info_print(void);
 void            change_q(int, int);
 void            change_rp(int, int);
 void            change_ticket(int, int);
-float           hrrn(struct proc *);
+int             hrrn(struct proc *);
 int             len_int(int);
 void            print_space(int);
 void            print_proc(struct proc*);
+void            print_head();
 
 #define MAX_NAME_LEN 16
 #define MAX_PID_LEN 4
@@ -29,8 +30,10 @@ void            print_proc(struct proc*);
 #define MAX_CYCLE_LEN 5
 #define MAX_HRRN_LEN 5
 #define MAX_EN_TIME_LEN 5
-
 #define MARGIN_LEN 3
+
+#define SUM_ALL_LEN  80
+
 #define DELIM " "
 
 // bio.c

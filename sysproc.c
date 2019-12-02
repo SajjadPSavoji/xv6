@@ -80,8 +80,7 @@ sys_sleep(void)
 int
 sys_info(void)
 {
-  cprintf("name\t\tpid\t\tstate\t\tpriority\t\tcreatetime\t\tntickets\t\tncycle\t\tHRRN\n");
-  cprintf("-------------------------------------------------------------------------------------------\n");
+  print_head();
   info_print();
   return 0;
 }
