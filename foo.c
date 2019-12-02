@@ -23,11 +23,13 @@ main(int argc, char *argv[])
     if(pid > 0)
         info();
 
+    int k = 1;
+
     if(pid == 0)
     {
         for (int i = 0; i < MAXNUM; i++)
         {
-            i*i*i*i*i*i;
+            k += 100 * 100;
         }
         
     }
