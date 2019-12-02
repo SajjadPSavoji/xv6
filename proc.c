@@ -627,6 +627,7 @@ void print_proc(struct proc* p)
   float h = hrrn(p);
   cprintf("%f" , h);
   print_space(MAX_HRRN_LEN + MARGIN_LEN - len_int(h));
+  cprintf("\n");
 }
 
 void print_space(int len)
