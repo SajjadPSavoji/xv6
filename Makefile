@@ -185,6 +185,7 @@ UPROGS=\
 	_test_rp\
 	_test_ticket\
 	_test_q\
+	_foo\
 
 fs.img: mkfs README $(UPROGS)
 	./mkfs fs.img README $(UPROGS)
