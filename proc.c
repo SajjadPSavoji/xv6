@@ -547,8 +547,8 @@ info_print(void)
   acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
-      if(p->state != 0)      
-        cprintf("%s\t\t %d\t\t %d\t\t %d\t\t %d\n", p->name, p->pid, p->state, p->q_num, p->en_time);
+      if(p->state != 0)
+        print_proc(p);
     }
   release(&ptable.lock);
 }
@@ -599,4 +599,61 @@ change_ticket(int pid, int n)
       }
     }
   release(&ptable.lock);
+}
+void print_proc(struct proc* p)
+{
+  // name
+  cprintf("%s" , p->name);
+  print_space(MAX_NAME_LEN + MARGIN_LEN - strlen(p->name));
+  // pid
+  cprintf("%d" , p->pid);
+  print_space(MAX_PID_LEN + MARGIN_LEN -len_int(p->pid));
+  // state
+  cprintf("%d" , p->state);
+  print_space(MAX_STATE_LEN + MARGIN_LEN - len_int(p->state));
+  // q_num
+  cprintf("%d" , p->q_num);
+  print_space(MAX_PR_LEN + MARGIN_LEN - len_int(p->q_num));
+  // creat time
+  cprintf("%d" , p->en_time);
+  print_space(MAX_EN_TIME_LEN + MARGIN_LEN - len_int(p->en_time));
+  // number of tickets
+  cprintf("%d" , p->n_ticket);
+  print_space(MAX_TICKET_LEN + MARGIN_LEN - len_int(p->n_ticket));
+  // number of cycles 
+  cprintf("%d" , p->n_cycle);
+  print_space(MAX_CYCLE_LEN + MARGIN_LEN - len_int(p->n_cycle));
+  // HRRN
+  float h = hrrn(p);
+  cprintf("%f" , h);
+  print_space(MAX_HRRN_LEN + MARGIN_LEN - len_int(h));
+}
+
+void print_space(int len)
+{
+  for (int i = 0; i < len; i++)
+  {
+    cprintf("%s" , DELIM);
+  }
+}
+
+int len_int(int i)
+{
+  if(i == 0)
+    return 1;
+
+  int c = 0;
+  while (i != 0)
+  {
+    i/= 10;
+    c++;
+  }
+  return c;
+}
+
+float hrrn(struct proc * p)
+{
+  float hrrn;
+  hrrn = ((float)ticks - p->en_time) / ((float)p->n_cycle);
+  return hrrn;
 }

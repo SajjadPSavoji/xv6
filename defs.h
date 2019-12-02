@@ -12,9 +12,26 @@ struct superblock;
 
 //sysproc.c
 void            info_print(void);
+<<<<<<< HEAD
 void            change_q(int, int);
 void            change_rp(int, int);
 void            change_ticket(int, int);
+=======
+float           hrrn(struct proc *);
+
+#define MAX_NAME_LEN 16
+#define MAX_PID_LEN 4
+#define MAX_STATE_LEN 15
+#define MAX_PR_LEN 1
+#define MAX_CREAT_TIME_LEN 5
+#define MAX_TICKET_LEN 5
+#define MAX_CYCLE_LEN 5
+#define MAX_HRRN_LEN 5
+#define MAX_EN_TIME_LEN 5
+
+#define MARGIN_LEN 3
+#define DELIM " "
+>>>>>>> 255152f2354d5004669d21a03f98cc1d17d8f110
 
 // bio.c
 void            binit(void);
