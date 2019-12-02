@@ -11,7 +11,7 @@ int
 main(void)
 {
   int pid, wpid;
-
+  change_q(getpid(), 1);
   if(open("console", O_RDWR) < 0){
     mknod("console", 1, 1);
     open("console", O_RDWR);
@@ -28,6 +28,7 @@ main(void)
       exit();
     }
     if(pid == 0){
+      change_q(getpid(), 0);
       exec("sh", argv);
       printf(1, "init: exec sh failed\n");
       exit();

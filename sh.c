@@ -166,7 +166,7 @@ main(void)
     }
     if(fork1() == 0)
     {
-      //system call ... to change q_num-------------------------
+      change_q(getpid(), 0);
       runcmd(parsecmd(buf));
     }
     wait();
