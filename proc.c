@@ -538,3 +538,16 @@ procdump(void)
     cprintf("\n");
   }
 }
+
+//now changing ------------
+void
+info_print(void)
+{
+  struct proc *p;
+  acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+      cprintf("%s, %s, %s, %s, %s", p->name, p->pid, p->state, p->q_num, p->en_time);
+    }
+  release(&ptable.lock);
+}
