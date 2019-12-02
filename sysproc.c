@@ -80,9 +80,10 @@ sys_sleep(void)
 int
 sys_info(void)
 {
-  cprintf("name   pid   state   priority    createtime");
-  cprintf("----------------------------------------------");
+  cprintf("name\t\tpid\t\tstate\t\tpriority\t\tcreatetime\n");
+  cprintf("------------------------------------------------------------------------------\n");
   info_print();
+  return 0;
 }
 
 // return how many clock tick interrupts have occurred

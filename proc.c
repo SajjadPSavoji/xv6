@@ -547,7 +547,8 @@ info_print(void)
   acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
-      cprintf("%s, %s, %s, %s, %s", p->name, p->pid, p->state, p->q_num, p->en_time);
+      if(p->state != 0)      
+        cprintf("%s\t\t %d\t\t %d\t\t %d\t\t %d\n", p->name, p->pid, p->state, p->q_num, p->en_time);
     }
   release(&ptable.lock);
 }

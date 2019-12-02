@@ -10,6 +10,9 @@ struct sleeplock;
 struct stat;
 struct superblock;
 
+//sysproc.c
+void            info_print(void);
+
 // bio.c
 void            binit(void);
 struct buf*     bread(uint, uint);
