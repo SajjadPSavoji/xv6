@@ -552,3 +552,51 @@ info_print(void)
     }
   release(&ptable.lock);
 }
+
+void
+change_q(int pid, int n)
+{
+  struct proc *p;
+  acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+      if(p->pid == pid)      
+      {
+        p->q_num = n;
+        break;
+      }
+    }
+  release(&ptable.lock);
+}
+
+void
+change_rp(int pid, int n)
+{
+  struct proc *p;
+  acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+      if(p->pid == pid)      
+      {
+        p->rp = n;
+        break;
+      }
+    }
+  release(&ptable.lock);
+}
+
+void
+change_ticket(int pid, int n)
+{
+  struct proc *p;
+  acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+      if(p->pid == pid)      
+      {
+        p->n_ticket = n;
+        break;
+      }
+    }
+  release(&ptable.lock);
+}

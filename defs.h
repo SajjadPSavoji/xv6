@@ -12,6 +12,9 @@ struct superblock;
 
 //sysproc.c
 void            info_print(void);
+void            change_q(int, int);
+void            change_rp(int, int);
+void            change_ticket(int, int);
 
 // bio.c
 void            binit(void);

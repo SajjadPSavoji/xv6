@@ -80,9 +80,51 @@ sys_sleep(void)
 int
 sys_info(void)
 {
-  cprintf("name\t\tpid\t\tstate\t\tpriority\t\tcreatetime\n");
-  cprintf("------------------------------------------------------------------------------\n");
+  cprintf("name\t\tpid\t\tstate\t\tpriority\t\tcreatetime\t\tntickets\t\tncycle\t\tHRRN\n");
+  cprintf("-------------------------------------------------------------------------------------------\n");
   info_print();
+  return 0;
+}
+
+int 
+sys_change_q(void)
+{
+  int pid, n;
+  if(argint(0, &pid) < 0)
+    return -1;
+  if(argint(1, &n) < 0)
+    return -1;
+
+  change_q(pid, n);
+
+  return 0;
+}
+
+int
+sys_change_rp(void)
+{
+  int pid, n;
+  if(argint(0, &pid) < 0)
+    return -1;
+  if(argint(1, &n) < 0)
+    return -1;
+  
+  change_rp(pid, n);
+
+  return 0;
+}
+
+int
+sys_change_ticket()
+{
+  int pid, n;
+  if(argint(0, &pid) < 0)
+    return -1;
+  if(argint(1, &n) < 0)
+    return -1;
+  
+  change_ticket(pid, n);
+  
   return 0;
 }
 

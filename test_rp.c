@@ -7,7 +7,7 @@ main(int argc, char *argv[])
 {
     if( argc != 3)
     {
-        printf(2 , "rp gets 2 arguments !");
+        printf(2 , "rp gets 2 arguments !\n");
         exit();
     }
     int pid , rp;

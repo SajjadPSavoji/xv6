@@ -104,6 +104,9 @@ extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_info(void);
+extern int sys_change_q(void);
+extern int sys_change_rp(void);
+extern int sys_change_ticket(void); 
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -128,6 +131,9 @@ static int (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_info]    sys_info,
+[SYS_change_q] sys_change_q,
+[SYS_change_rp] sys_change_rp,
+[SYS_change_ticket] sys_change_ticket,
 };
 
 void
