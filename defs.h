@@ -12,11 +12,9 @@ struct superblock;
 
 //sysproc.c
 void            info_print(void);
-<<<<<<< HEAD
 void            change_q(int, int);
 void            change_rp(int, int);
 void            change_ticket(int, int);
-=======
 float           hrrn(struct proc *);
 
 #define MAX_NAME_LEN 16
@@ -31,7 +29,6 @@ float           hrrn(struct proc *);
 
 #define MARGIN_LEN 3
 #define DELIM " "
->>>>>>> 255152f2354d5004669d21a03f98cc1d17d8f110
 
 // bio.c
 void            binit(void);
