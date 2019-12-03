@@ -24,3 +24,4 @@
 #define SYS_change_q        23
 #define SYS_change_rp       24
 #define SYS_change_ticket   25
+#define SYS_myfork          26

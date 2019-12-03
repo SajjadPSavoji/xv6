@@ -107,6 +107,7 @@ extern int sys_info(void);
 extern int sys_change_q(void);
 extern int sys_change_rp(void);
 extern int sys_change_ticket(void); 
+extern int sys_myfork(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -134,6 +135,7 @@ static int (*syscalls[])(void) = {
 [SYS_change_q] sys_change_q,
 [SYS_change_rp] sys_change_rp,
 [SYS_change_ticket] sys_change_ticket,
+[SYS_myfork]    sys_myfork,
 };
 
 void

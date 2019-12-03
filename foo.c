@@ -3,7 +3,7 @@
 #include "user.h"
 
 #define NUMPROCS 10
-#define MAXNUM 1000
+#define MAXNUM 9999999999
 
 int
 main(int argc, char *argv[])
@@ -20,8 +20,6 @@ main(int argc, char *argv[])
         if(pid == 0)
             break;
     }
-    if(pid > 0)
-        info();
 
     int k = 1;
 
@@ -29,13 +27,19 @@ main(int argc, char *argv[])
     {
         for (int i = 0; i < MAXNUM; i++)
         {
-            k += 100 * 100;
+            for (int j = 0; j < MAXNUM; j++)
+            {
+                for (int t = 0; t < MAXNUM; t++)
+                {
+                    k ++;
+                }
+            }
         }
-        
+        exit();
     }
 
     for (int i = 0; i < NUMPROCS; i++)
         wait();
-    
+    info();
     exit();
 }

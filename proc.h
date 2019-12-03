@@ -54,7 +54,7 @@ struct proc {
   int n_ticket;
   int n_cycle;
   int en_time;
-  int rp;
+  float rp;
 };
 
 // Process memory is laid out contiguously, low addresses first:

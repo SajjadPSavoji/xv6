@@ -22,13 +22,12 @@ main(void)
   for(;;){
     printf(1, "we will we will rock you. from sina and sajjad :)))\n");
     printf(1, "init: starting sh\n");
-    pid = fork();
+    pid = myfork();
     if(pid < 0){
       printf(1, "init: fork failed\n");
       exit();
     }
     if(pid == 0){
-      change_q(getpid(), 0);
       exec("sh", argv);
       printf(1, "init: exec sh failed\n");
       exit();

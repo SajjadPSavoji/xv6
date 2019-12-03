@@ -27,6 +27,7 @@ int info(void);
 int change_q(int, int);
 int change_rp(int, int);
 int change_ticket(int, int);
+int myfork(void);
 
 // ulib.c
 int stat(const char*, struct stat*);

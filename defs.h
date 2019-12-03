@@ -23,16 +23,18 @@ void            print_head();
 
 #define MAX_NAME_LEN 10
 #define MAX_PID_LEN 4
-#define MAX_STATE_LEN 10
+#define MAX_STATE_LEN 8
 #define MAX_PR_LEN 1
 #define MAX_CREAT_TIME_LEN 5
-#define MAX_TICKET_LEN 5
+#define MAX_TICKET_LEN 7
 #define MAX_CYCLE_LEN 5
 #define MAX_HRRN_LEN 5
 #define MAX_EN_TIME_LEN 5
-#define MARGIN_LEN 3
+#define MAX_RP_LEN 5
 
-#define SUM_ALL_LEN  80
+#define MARGIN_LEN 2
+
+#define SUM_ALL_LEN MAX_NAME_LEN +MAX_PID_LEN +MAX_STATE_LEN +MAX_PR_LEN +MAX_CREAT_TIME_LEN +MAX_TICKET_LEN +MAX_CYCLE_LEN +MAX_HRRN_LEN +MAX_EN_TIME_LEN +MAX_RP_LEN + 7* MARGIN_LEN
 
 #define DELIM " "
 
@@ -132,6 +134,7 @@ int             pipewrite(struct pipe*, char*, int);
 int             cpuid(void);
 void            exit(void);
 int             fork(void);
+int             myfork(void);
 int             growproc(int);
 int             kill(int);
 struct cpu*     mycpu(void);

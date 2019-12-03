@@ -174,6 +174,63 @@ growproc(int n)
   return 0;
 }
 
+
+// Create a new process copying p as the parent.
+// Sets up stack to return as if from system call.
+// Caller must set state of returned proc to RUNNABLE.
+int
+myfork(void)
+{
+  int i, pid;
+  struct proc *np;
+  struct proc *curproc = myproc();
+
+  // Allocate process.
+  if((np = allocproc()) == 0){
+    return -1;
+  }
+
+  // Copy process state from proc.
+  if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
+    kfree(np->kstack);
+    np->kstack = 0;
+    np->state = UNUSED;
+    return -1;
+  }
+  np->sz = curproc->sz;
+  np->parent = curproc;
+  *np->tf = *curproc->tf;
+
+  // Clear %eax so that fork returns 0 in the child.
+  np->tf->eax = 0;
+
+  for(i = 0; i < NOFILE; i++)
+    if(curproc->ofile[i])
+      np->ofile[i] = filedup(curproc->ofile[i]);
+  np->cwd = idup(curproc->cwd);
+
+  safestrcpy(np->name, curproc->name, sizeof(curproc->name));
+
+  pid = np->pid;
+
+  acquire(&ptable.lock);
+
+  np->state = RUNNABLE;
+  //now changing ------------------------------
+  np->q_num = 0;
+  np->n_ticket = 1000;
+  np->n_cycle = 1;
+  np->en_time = ticks;
+  np->rp = 100.0;
+
+  release(&ptable.lock);
+
+  return pid;
+}
+
+
+
+
 // Create a new process copying p as the parent.
 // Sets up stack to return as if from system call.
 // Caller must set state of returned proc to RUNNABLE.
@@ -220,7 +277,7 @@ fork(void)
   np->n_ticket = 1;
   np->n_cycle = 1;
   np->en_time = ticks;
-  np->rp = 1;
+  np->rp = 100.0;
 
   release(&ptable.lock);
 
@@ -317,6 +374,155 @@ wait(void)
   }
 }
 
+// PAGEBREAK: COSTUM
+// implementation of queque scheduling
+
+long randstate = 1;
+int
+rand()
+{
+  randstate = randstate * 1664525 + 1013904223;
+  if(randstate < 0)
+    return -randstate;
+
+  return randstate;
+}
+
+void q_scheduler(int* need_sched , struct cpu *c)
+{
+  if(*need_sched ==0)
+    return;
+
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE)
+        continue;
+
+      *need_sched = 0;
+      c->proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
+
+      swtch(&(c->scheduler), p->context);
+      switchkvm();
+      c->proc = 0;
+    }
+}
+
+void q0_scheduler(int* need_sched , struct cpu *c)
+{
+  if(*need_sched ==0)
+    return;
+
+  struct proc *p;
+  int random_n = rand();
+  int sum_tick = 0;
+
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE || p->q_num != 0)
+        continue;
+      sum_tick += p->n_ticket;
+  }
+
+  if(sum_tick == 0)
+    return;
+
+  int chozen = random_n % sum_tick;
+
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE || p->q_num != 0)
+        continue;
+      chozen -= p->n_ticket;
+      if(chozen <= 0)
+      {
+        *need_sched = 0;
+        c->proc = p;
+        switchuvm(p);
+        p->state = RUNNING;
+
+        swtch(&(c->scheduler), p->context);
+        switchkvm();  
+        return;      
+      }
+  }
+}
+
+void q1_scheduler(int* need_sched , struct cpu *c)
+{
+  if(*need_sched ==0)
+    return;
+
+  int max_hrrn = -1;
+  struct proc *chozen = 0;
+  
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE || p->q_num != 1)
+        continue;
+
+      if(hrrn(p) > max_hrrn)
+      {
+        chozen = p;
+        max_hrrn = hrrn(p);
+      }
+  }
+  if(max_hrrn == -1)
+    return;
+
+  *need_sched = 0;
+  c->proc = chozen;
+  switchuvm(chozen);
+  chozen->state = RUNNING;
+
+  swtch(&(c->scheduler), chozen->context);
+  switchkvm();      
+}
+
+void q2_scheduler(int* need_sched , struct cpu *c)
+{
+  if(*need_sched ==0)
+    return;
+
+  float min_rp =__FLT_MAX__;
+  struct proc *chozen = 0;  
+
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE || p->q_num != 2)
+        continue;
+
+      if(p->rp < min_rp)
+      {
+        chozen = p;
+        min_rp = p->rp;
+      }
+
+      if(p->rp == min_rp)
+      {
+        int i = rand();
+        if(i%2 == 0)
+        {
+          chozen = p;
+          min_rp = p->rp;
+        }
+      }
+  }
+
+  if(min_rp == __FLT_MAX__)
+    return;
+
+  *need_sched = 0;
+  c->proc = chozen;
+  switchuvm(chozen);
+  chozen->state = RUNNING;
+  chozen->rp -= 0.1;
+  if(chozen->rp < 0 )
+    chozen->rp = 0;
+
+  swtch(&(c->scheduler), chozen->context);
+  switchkvm();
+}
+
 //PAGEBREAK: 42
 // Per-CPU process scheduler.
 // Each CPU calls scheduler() after setting itself up.
@@ -328,9 +534,10 @@ wait(void)
 void
 scheduler(void)
 {
-  struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
+
+  int need_sched = 1;
   
   for(;;){
     // Enable interrupts on this processor.
@@ -338,24 +545,33 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
 
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
+    need_sched = 1;
+  
+    q0_scheduler(&need_sched , c);
+    q1_scheduler(&need_sched , c);
+    q2_scheduler(&need_sched , c);
+    q_scheduler (&need_sched , c);
 
-      swtch(&(c->scheduler), p->context);
-      switchkvm();
+    // for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    //   if(p->state != RUNNABLE)
+    //     continue;
 
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
-    }
+    //   // Switch to chosen process.  It is the process's job
+    //   // to release ptable.lock and then reacquire it
+    //   // before jumping back to us.
+    //   c->proc = p;
+    //   switchuvm(p);
+    //   p->state = RUNNING;
+
+    //   swtch(&(c->scheduler), p->context);
+    //   switchkvm();
+
+    //   // Process is done running for now.
+    //   // It should have changed its p->state before coming back.
+    //   c->proc = 0;
+    // }
+    c->proc = 0;
     release(&ptable.lock);
 
   }
@@ -620,15 +836,21 @@ void print_head()
   cprintf("%s" , "t0");
   print_space(MAX_EN_TIME_LEN + MARGIN_LEN - strlen("t0"));
   // number of tickets
-  cprintf("%s" , "tickets");
-  print_space(MAX_TICKET_LEN + MARGIN_LEN - strlen("tickets"));
+  cprintf("%s" , "ticks");
+  print_space(MAX_TICKET_LEN + MARGIN_LEN - strlen("ticks"));
   // number of cycles 
   cprintf("%s" , "cycles");
   print_space(MAX_CYCLE_LEN + MARGIN_LEN - strlen("cycles"));
   // HRRN
   cprintf("%s" , "hrrn");
   print_space(MAX_HRRN_LEN + MARGIN_LEN - strlen("hrrn"));
+
+  // RP
+  cprintf("%s" , "RP");
+  print_space(MAX_RP_LEN + MARGIN_LEN - strlen("RP"));
   cprintf("\n");
+
+  // print dashes
   for (int i = 0; i < SUM_ALL_LEN; i++)
   {
     cprintf("-");
@@ -681,6 +903,7 @@ void print_proc(struct proc* p)
     panic("unkonw proc type!");
     break;
   }
+
   // q_num
   cprintf("%d" , p->q_num);
   print_space(MAX_PR_LEN + MARGIN_LEN - len_int(p->q_num));
@@ -697,7 +920,12 @@ void print_proc(struct proc* p)
   int h = hrrn(p);
   cprintf("%f" , h);
   print_space(MAX_HRRN_LEN + MARGIN_LEN - len_int(h));
+  // PR
+  int r = (int) (p->rp*10);
+  cprintf("%f" , r);
+  print_space(MAX_RP_LEN + MARGIN_LEN - len_int(r));
   cprintf("\n");
+
 }
 
 void print_space(int len)

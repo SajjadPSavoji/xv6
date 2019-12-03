@@ -166,7 +166,6 @@ main(void)
     }
     if(fork1() == 0)
     {
-      change_q(getpid(), 0);
       runcmd(parsecmd(buf));
     }
     wait();
@@ -186,7 +185,7 @@ fork1(void)
 {
   int pid;
 
-  pid = fork();
+  pid = myfork();
   if(pid == -1)
     panic("fork");
   return pid;

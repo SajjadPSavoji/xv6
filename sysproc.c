@@ -85,6 +85,12 @@ sys_info(void)
   return 0;
 }
 
+int
+sys_myfork(void)
+{
+ return myfork();
+}
+
 int 
 sys_change_q(void)
 {
