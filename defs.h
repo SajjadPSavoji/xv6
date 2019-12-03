@@ -21,9 +21,9 @@ void            print_space(int);
 void            print_proc(struct proc*);
 void            print_head();
 
-#define MAX_NAME_LEN 16
+#define MAX_NAME_LEN 10
 #define MAX_PID_LEN 4
-#define MAX_STATE_LEN 15
+#define MAX_STATE_LEN 10
 #define MAX_PR_LEN 1
 #define MAX_CREAT_TIME_LEN 5
 #define MAX_TICKET_LEN 5

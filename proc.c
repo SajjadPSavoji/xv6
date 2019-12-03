@@ -617,8 +617,8 @@ void print_head()
   cprintf("%s" , "q");
   print_space(MAX_PR_LEN + MARGIN_LEN - strlen("q"));
   // creat time
-  cprintf("%s" , "en time");
-  print_space(MAX_EN_TIME_LEN + MARGIN_LEN - strlen("en time"));
+  cprintf("%s" , "t0");
+  print_space(MAX_EN_TIME_LEN + MARGIN_LEN - strlen("t0"));
   // number of tickets
   cprintf("%s" , "tickets");
   print_space(MAX_TICKET_LEN + MARGIN_LEN - strlen("tickets"));
@@ -643,10 +643,44 @@ void print_proc(struct proc* p)
   print_space(MAX_NAME_LEN + MARGIN_LEN - strlen(p->name));
   // pid
   cprintf("%d" , p->pid);
-  print_space(MAX_PID_LEN + MARGIN_LEN -len_int(p->pid));
+  print_space(MAX_PID_LEN + MARGIN_LEN -len_int(p->pid)); 
   // state
-  cprintf("%d" , p->state);
-  print_space(MAX_STATE_LEN + MARGIN_LEN - len_int(p->state));
+  switch (p->state)
+  {
+    case 0:
+    cprintf("UNUSED");
+    print_space(MAX_STATE_LEN + MARGIN_LEN - strlen("UNUSED"));
+    break;
+
+    case 1:
+    cprintf("EMBRYO");
+    print_space(MAX_STATE_LEN + MARGIN_LEN - strlen("EMBRYO"));
+    break;
+
+    case 2:
+    cprintf("SLEEPING");
+    print_space(MAX_STATE_LEN + MARGIN_LEN - strlen("SLEEPING"));
+    break;
+
+    case 3:
+    cprintf("RUNNABLE");
+    print_space(MAX_STATE_LEN + MARGIN_LEN - strlen("RUNNABLE"));
+    break;
+
+    case 4:
+    cprintf("RUNNING");
+    print_space(MAX_STATE_LEN + MARGIN_LEN - strlen("RUNNING"));
+    break;
+
+    case 5:
+    cprintf("ZOMBIE");
+    print_space(MAX_STATE_LEN + MARGIN_LEN - strlen("ZOMBIE"));
+    break;
+
+    default:
+    panic("unkonw proc type!");
+    break;
+  }
   // q_num
   cprintf("%d" , p->q_num);
   print_space(MAX_PR_LEN + MARGIN_LEN - len_int(p->q_num));
