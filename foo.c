@@ -3,7 +3,7 @@
 #include "user.h"
 
 #define NUMPROCS 10
-#define MAXNUM 9999999999
+#define MAXNUM 99999999999
 
 int
 main(int argc, char *argv[])
@@ -40,6 +40,5 @@ main(int argc, char *argv[])
 
     for (int i = 0; i < NUMPROCS; i++)
         wait();
-    info();
     exit();
 }

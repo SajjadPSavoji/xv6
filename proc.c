@@ -433,7 +433,7 @@ void q0_scheduler(int* need_sched , struct cpu *c)
       if(p->state != RUNNABLE || p->q_num != 0)
         continue;
       chozen -= p->n_ticket;
-      if(chozen <= 0)
+      if(chozen < 0)
       {
         *need_sched = 0;
         c->proc = p;
