@@ -37,13 +37,7 @@ reacquire(struct spinlock *lock)
 void
 acquire(struct spinlock *lk)
 {
-  // cprintf("%d\n" , lk->cpu->proc->pid);
-  // cprintf("%d\n" , mycpu()->proc->pid);
 
-  // ----------------- code added here -----------------
-  // if(reacquire(lk))
-  //   return;
-  // ---------------------------------------------------
   pushcli(); // disable interrupts to avoid deadlock.
 
   switch (holding(lk))
@@ -58,15 +52,6 @@ acquire(struct spinlock *lk)
   default:
     break;
   }
-
-  // if(holding(lk))
-  // {
-  //   if (reacquire(lk))
-  //   {
-  //     return;
-  //   }
-  //   panic("acquire");
-  // }
 
   // The xchg is atomic.
   while(xchg(&lk->locked, 1) != 0)
