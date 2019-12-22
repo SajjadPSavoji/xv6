@@ -532,3 +532,11 @@ procdump(void)
     cprintf("\n");
   }
 }
+//------------------
+void
+ac_func()
+{
+  acquire(&ptable.lock);
+  acquire(&ptable.lock);
+  release(&ptable.lock);
+}

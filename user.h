@@ -23,6 +23,9 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+int barrier_init(void);
+int barrier(void);
+int acq(void);
 
 // ulib.c
 int stat(const char*, struct stat*);
