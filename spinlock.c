@@ -21,10 +21,29 @@ initlock(struct spinlock *lk, char *name)
 // Loops (spins) until the lock is acquired.
 // Holding a lock for a long time may cause
 // other CPUs to waste time spinning to acquire it.
+int
+reacquire(struct spinlock *lock)
+{
+  int r;
+  pushcli();
+  r = lock->cpu->proc->pid == myproc()->pid;
+  popcli();
+  return r;
+}
+
 void
 acquire(struct spinlock *lk)
 {
+  // cprintf("%d\n" , lk->cpu->proc->pid);
+  // cprintf("%d\n" , mycpu()->proc->pid);
+
   pushcli(); // disable interrupts to avoid deadlock.
+
+  // ----------------- code added here -----------------
+  // if(reacquire(lk))
+  //   return;
+  // ---------------------------------------------------
+
   if(holding(lk))
     panic("acquire");
 
@@ -95,7 +114,6 @@ holding(struct spinlock *lock)
   popcli();
   return r;
 }
-
 
 // Pushcli/popcli are like cli/sti except that they are matched:
 // it takes two popcli to undo two pushcli.  Also, if interrupts
