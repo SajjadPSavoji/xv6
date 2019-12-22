@@ -26,7 +26,10 @@ reacquire(struct spinlock *lock)
 {
   int r;
   pushcli();
-  r = lock->cpu->proc->pid == myproc()->pid;
+  struct cpu* cur_cpu  =  mycpu();
+  if (lock->cpu == 0x0)
+    return 0;
+  r = lock->cpu->proc->pid == cur_cpu->proc->pid;
   popcli();
   return r;
 }
@@ -37,15 +40,33 @@ acquire(struct spinlock *lk)
   // cprintf("%d\n" , lk->cpu->proc->pid);
   // cprintf("%d\n" , mycpu()->proc->pid);
 
-  pushcli(); // disable interrupts to avoid deadlock.
-
   // ----------------- code added here -----------------
   // if(reacquire(lk))
   //   return;
   // ---------------------------------------------------
+  pushcli(); // disable interrupts to avoid deadlock.
 
-  if(holding(lk))
+  switch (holding(lk))
+  {
+  case 1:
     panic("acquire");
+    break;
+  case -1:
+    popcli();
+    return;
+    break;
+  default:
+    break;
+  }
+
+  // if(holding(lk))
+  // {
+  //   if (reacquire(lk))
+  //   {
+  //     return;
+  //   }
+  //   panic("acquire");
+  // }
 
   // The xchg is atomic.
   while(xchg(&lk->locked, 1) != 0)
@@ -110,7 +131,14 @@ holding(struct spinlock *lock)
 {
   int r;
   pushcli();
-  r = lock->locked && lock->cpu == mycpu();
+  if (lock->locked && lock->cpu == mycpu() && lock->cpu->proc == myproc())
+    r = -1;
+  else if(lock->locked && lock->cpu == mycpu())
+    r = 1;
+  else 
+    r = 0;
+  // r = lock->locked && lock->cpu == mycpu();
+  // if(lock->locked && lock->cpu->proc->pid)
   popcli();
   return r;
 }
