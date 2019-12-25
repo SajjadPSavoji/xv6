@@ -13,14 +13,17 @@ main(int argc, char *argv[])
 {
     barrier_init(NUMFORK + 1);
     int pid;
-
+    printf(1, "now %d processes will be forked\n", NUMFORK);
     for(int i = 0; i < NUMFORK; i++)
         if((pid = fork()) == 0)
         {
-            printf(1, "process with pid : %d has been forked and will sleep\n", getpid());
+            printf(1, "pid : %d has been forked\n", getpid());
             sleep(100 * i);
             break;
         }
+        else
+            sleep(10);
+        
     
     printf(1, "process with pid : %d has reached the barrier\n", getpid());
     barrier();
