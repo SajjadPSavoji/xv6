@@ -17,7 +17,7 @@ main(int argc, char *argv[])
         if((pid = fork()) == 0)
         {
             printf(1, "process with pid : %d has been forked and will sleep\n", getpid());
-            sleep(200);
+            sleep(100 * i);
             break;
         }
     
