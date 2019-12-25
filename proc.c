@@ -549,3 +549,11 @@ ac_func()
   release(&ptable.lock);
 }
 
+void            
+barrier_init(int c)
+{}
+
+void            
+barrier_reached(void)
+{}
+
