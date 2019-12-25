@@ -23,7 +23,7 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-int barrier_init(void);
+int barrier_init(int);
 int barrier(void);
 int acq(void);
 

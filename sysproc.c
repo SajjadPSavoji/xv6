@@ -78,14 +78,21 @@ sys_sleep(void)
 }
 
 int
-sys_barrier_init()
+sys_barrier_init(void)
 {
+  int n;
+
+  if(argint(0, &n) < 0)
+    return -1;
+  
+  barrier_init(n);
   return 0;
 }
 
 int
-sys_barrier()
+sys_barrier(void)
 {
+  barrier_reached();
   return 0;
 }
 

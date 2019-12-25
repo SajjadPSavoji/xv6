@@ -12,12 +12,12 @@ int
 main(int argc, char *argv[])
 {
     int pid;
-    barrier_init();
+    barrier_init(10);
     for(int i = 0; i < NUMFORK; i++)
         if((pid = fork()) == 0)
         {
             printf(1, "process with pid : %d has been forked and will sleep\n", getpid());
-            sleep(500);
+            sleep(200);
             break;
         }
     
