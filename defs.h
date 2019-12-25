@@ -124,6 +124,8 @@ void            yield(void);
 void            ac_func(void);
 void            barrier_init(int);
 void            barrier_reached(void);
+void            release_crashed(void);
+void            change_state_to_crash(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

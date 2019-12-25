@@ -555,5 +555,42 @@ barrier_init(int c)
 
 void            
 barrier_reached(void)
-{}
+{
+  acquire(&Barrier.lock);
+  Barrier.count --;
+
+  if(Barrier.count == 0)
+  {
+    // ptable.lock is aquired in chage_state_to_crash 
+    // and is not released
+    release_crashed();
+  }
+  else
+  {
+    // ptable.lock is aquired in chage_state_to_crash 
+    // and is not released
+    change_state_to_crash();
+  }
+    release(&Barrier.lock);
+    sched();
+}
+
+void release_crashed()
+{
+  acquire(&ptable.lock);
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != CRASH)
+        continue;
+      p->state = RUNNABLE;
+  }  
+}
+
+void change_state_to_crash()
+{
+  acquire(&ptable.lock);
+  // change my state to crash
+  struct proc *p = myproc();
+  p->state = CRASH;
+}
 
