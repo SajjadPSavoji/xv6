@@ -12,6 +12,13 @@ struct {
   struct proc proc[NPROC];
 } ptable;
 
+struct
+{
+  struct spinlock lock;
+  int count;
+} Barrier;
+
+
 static struct proc *initproc;
 
 int nextpid = 1;
@@ -541,3 +548,4 @@ ac_func()
   acquire(&ptable.lock);
   release(&ptable.lock);
 }
+
