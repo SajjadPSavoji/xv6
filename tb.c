@@ -11,8 +11,9 @@ char buf[128];
 int
 main(int argc, char *argv[])
 {
+    barrier_init(NUMFORK + 1);
     int pid;
-    barrier_init(10);
+
     for(int i = 0; i < NUMFORK; i++)
         if((pid = fork()) == 0)
         {
