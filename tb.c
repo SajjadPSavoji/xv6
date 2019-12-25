@@ -23,7 +23,9 @@ main(int argc, char *argv[])
     
     printf(1, "process with pid : %d has reached the barrier\n", getpid());
     barrier();
-    printf(1, "process with pid : %d has passed the barrier\n", getpid());
+    if(pid != 0)
+        printf(1, "now the processes will pass the barriers\n");    
+    printf(1, "pid : %d \n", getpid());
     for (int i = 0; i < NUMFORK; i++)
         wait();
     
