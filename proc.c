@@ -551,7 +551,11 @@ ac_func()
 
 void            
 barrier_init(int c)
-{}
+{
+  acquire(&Barrier.lock);
+  Barrier.count = c;
+  release(&Barrier.lock);
+}
 
 void            
 barrier_reached(void)
