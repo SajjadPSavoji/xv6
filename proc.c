@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "fcntl.h"
 
 struct {
   struct spinlock lock;
@@ -212,6 +213,8 @@ fork(void)
   safestrcpy(np->name, curproc->name, sizeof(curproc->name));
 
   pid = np->pid;
+
+  fs_open("/_pages/mahta.page" , O_CREATE);
 
   acquire(&ptable.lock);
 

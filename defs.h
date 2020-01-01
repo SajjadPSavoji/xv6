@@ -188,6 +188,7 @@ void            clearpteu(pde_t *pgdir, char *uva);
 
 // new features added to virtual memory 
 #define PAGES "_pages"
+int             fs_open(char * path , int omode);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
