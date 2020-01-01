@@ -10,6 +10,7 @@ char *argv[] = { "sh", 0 };
 int
 main(void)
 {
+  mkdir("_pages");
   int pid, wpid;
 
   if(open("console", O_RDWR) < 0){
@@ -19,9 +20,10 @@ main(void)
   dup(0);  // stdout
   dup(0);  // stderr
 
+
   for(;;){
     printf(1, "init: starting sh\n");
-    // code added here __sajjad___________________________________________________________________________
+    // code added here _____________________________________________________________________________
     printf(1,"sina sharifi and sajjad p savoji\n");
     // code ended here____________________________________________________________________________________
     pid = fork();
