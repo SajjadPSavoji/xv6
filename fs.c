@@ -588,6 +588,40 @@ namecmp(const char *s, const char *t)
 }
 
 // ----------------------------------------------------------------
+int             
+fs_dupdirs_subs(char* path1 , char* path2 , struct inode *dp)
+{
+  char sub_name1[5*DIRSIZ];
+  char sub_name2[5*DIRSIZ];
+
+  uint off;
+  struct dirent de;
+
+  if(dp->type != T_DIR)
+    panic("fs_dupdirs_subs: dp not DIR");
+
+  for(off = 2*sizeof(de); off < dp->size; off += sizeof(de)){
+    if(readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+      panic("dirlookup read");
+    if(de.inum == 0)
+      continue;
+    
+    path_extend(sub_name1, path1, de.name,5*DIRSIZ);
+    path_extend(sub_name2, path2, de.name,5*DIRSIZ);
+    
+    if(fs_dupfiles(sub_name1 , sub_name2) < 0)
+    {
+      return -1;
+    }
+  }
+
+  // on success
+  return 0;
+}
+// ----------------------------------------------------------------
+
+
+// ----------------------------------------------------------------
 // iterate over sub dirs or subfiles and unlink them
 // neither ip or  dp is locked
 int             
@@ -613,6 +647,8 @@ fs_unlink_subs(char* path , struct inode *dp)
 
 }
 // ----------------------------------------------------------------
+
+
 // Look for a directory entry in a directory.
 // If found, set *poff to byte offset of entry.
 struct inode*

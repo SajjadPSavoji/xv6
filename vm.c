@@ -325,8 +325,23 @@ copyuvm(pde_t *pgdir, uint sz)
   for(i = 0; i < sz; i += PGSIZE){
     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
       panic("copyuvm: pte should exist");
-    if(!(*pte & PTE_P))
+
+    if((!(*pte & PTE_P)) && (!(*pte & PTE_PG)))
       panic("copyuvm: page not present");
+
+    if((*pte & PTE_PG))
+    {
+      // copy pte*.page file
+      // @impliment : is in the fork 
+      // -------------------
+      flags = PTE_FLAGS(*pte);
+      if(mappages(d, (void*)i, PGSIZE, V2P(*pte), flags) < 0) {
+        goto bad;
+      }
+      continue;
+    }
+
+    // else :
     pa = PTE_ADDR(*pte);
     flags = PTE_FLAGS(*pte);
     if((mem = kalloc()) == 0)

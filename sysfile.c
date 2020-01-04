@@ -66,6 +66,18 @@ sys_dup(void)
   return fd;
 }
 
+// --------------------------------------------------------------------------------------------
+int
+fs_read(int fd , int n , char* p)
+{
+  struct file *f = myproc()->ofile[fd];
+  // check some conditions
+  if(f == 0)
+    return -1;
+
+  return fileread(f, p, n);
+}
+//  -------------------------------------------------------------------------------------------
 int
 sys_read(void)
 {
@@ -78,6 +90,18 @@ sys_read(void)
   return fileread(f, p, n);
 }
 
+// -------------------------------------------------------------------------------------------
+int
+fs_write(int fd , int n , char* p)
+{
+  struct file *f = myproc()->ofile[fd];
+  // check some conditions
+  if(f == 0)
+    return -1;
+  return filewrite(f, p, n);
+}
+
+// -------------------------------------------------------------------------------------------
 int
 sys_write(void)
 {
@@ -90,6 +114,19 @@ sys_write(void)
   return filewrite(f, p, n);
 }
 
+// --------------------------------------------------------------------------------------------
+int
+fs_close(int fd)
+{
+   struct file *f = myproc()->ofile[fd];
+  // check some conditions
+  if(f == 0)
+    return -1;
+  myproc()->ofile[fd] = 0;
+  fileclose(f);
+  return 0;
+}
+// --------------------------------------------------------------------------------------------
 int
 sys_close(void)
 {
@@ -179,6 +216,117 @@ isdirempty(struct inode *dp)
   }
   return 1;
 }
+
+// ---------------------------------------------------------------------------------------------
+// copy content of file1 (path1) ---> file2 (path2)
+// unlink file2 if needed
+// assuming .page files so buff_size is PAGESIZE
+int
+fs_dupfiles(char* path1 , char* path2)
+{
+  int fd1 , fd2;
+  char buff[PAGESZ];
+
+  fd1 = fs_open(path1 , O_RDONLY);
+  fs_unlink(path2);
+  fd2 = fs_open(path2 , O_WRONLY | O_CREATE);
+
+  // check some conditions
+  if (fd1 < 0 || fd2 <0)
+    return -1;
+
+  // read and write
+  while (fs_read(fd1 , PAGESZ , buff))
+  {
+    fs_write(fd2 , PAGESZ , buff);
+    memset(buff ,0 , PAGESZ);
+  }
+
+  // close both files to make main mem and secondary storage coherent
+  fs_close(fd1);
+  fs_close(fd2);
+
+  // on success 
+  return 0;
+}
+// ---------------------------------------------------------------------------------------------
+
+
+// ---------------------------------------------------------------------------------------------
+// copy path1/files to path2/
+// NOTE that only files whould be copied after ward
+int             
+fs_dupdirs(char* path1 , char* path2)
+{
+  struct inode *ip1, *dp1;
+  char name1[DIRSIZ];
+  uint off1;
+
+  struct inode *ip2, *dp2;
+  char name2[DIRSIZ];
+  uint off2;
+  begin_op();
+  if((dp1 = nameiparent(path1, name1)) == 0){
+    return -1;
+  }
+
+  if((dp2 = nameiparent(path2, name2)) == 0){
+    return -1;
+  }
+  ilock(dp1);
+  // ilock(dp2);
+  // // Cannot dup "." or "..".
+  if(namecmp(name1, ".") == 0 || namecmp(name1, "..") == 0)
+    goto bad;
+
+  if(namecmp(name2, ".") == 0 || namecmp(name2, "..") == 0)
+    goto bad;
+
+  if((ip1 = dirlookup(dp1, name1, &off1)) == 0)
+    goto bad;
+
+  if((ip2 = dirlookup(dp2, name2, &off2)) == 0)
+    goto bad;
+
+  ilock(ip1);
+  ilock(ip2);
+
+  if(ip1->nlink < 1)
+    panic("dupdirs: 1.nlink < 1");
+
+  if(ip2->nlink < 1)
+    panic("dupdirs: 2.nlink < 1");
+
+  // chaeck that both are dirs
+  if(ip1->type != T_DIR || ip2->type != T_DIR)
+    panic("dupdirs: path is not dir");
+
+
+  // release locks and for over files
+  iunlockput(ip1);
+  iunlockput(dp1);
+  iunlockput(ip2);
+  // iunlockput(dp2);
+  end_op();
+
+  // check if any duplication is needed --> then your job is done
+  if(isdirempty(ip1))
+  {
+    return 0;
+  }
+  // loop over files
+  // @impliment:
+  return fs_dupdirs_subs(path1 , path2 , ip1);
+
+bad:
+  iunlockput(dp1);
+  // iunlockput(dp2);
+  end_op();
+  return -1;
+}
+// ---------------------------------------------------------------------------------------------
+
+
 // -----------------------------------------------------------------------------
 // wrap this function with a calls to begin_op() and end_op()
 // additional argument iter is added to prevent deadlock

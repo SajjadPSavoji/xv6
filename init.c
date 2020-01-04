@@ -11,6 +11,8 @@ int
 main(void)
 {
   mkdir("_pages");
+  mkdir("_pages/1");
+
   int pid, wpid;
 
   if(open("console", O_RDWR) < 0){
@@ -25,7 +27,7 @@ main(void)
     printf(1, "init: starting sh\n");
     // code added here _____________________________________________________________________________
     printf(1,"sina sharifi and sajjad p savoji\n");
-    // code ended here____________________________________________________________________________________
+    // code ended here______________________________________________________________________________
     pid = fork();
     if(pid < 0){
       printf(1, "init: fork failed\n");

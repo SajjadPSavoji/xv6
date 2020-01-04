@@ -155,6 +155,7 @@ int             argstr(int, char**);
 int             fetchint(uint, int*);
 int             fetchstr(uint, char**);
 void            syscall(void);
+void            pgflt_handler(void);
 
 // timer.c
 void            timerinit(void);
@@ -188,10 +189,18 @@ void            clearpteu(pde_t *pgdir, char *uva);
 
 // new features added to virtual memory 
 #define PAGES "_pages"
+#define PAGESZ 4096
+
 int             fs_open(char * path , int omode);
 int             fs_unlink(char* path);
 int             fs_unlink_subs(char* path , struct inode *dp);
+int             fs_dupdirs(char* path1 , char* path2);
+int             fs_dupfiles(char* path1 , char* path2);
+int             fs_dupdirs_subs(char* path1 , char* path2 , struct inode *dp);
 int             fs_mkdir(char* path);
+int             fs_read(int fd , int n , char* p);
+int             fs_write(int fd , int n , char* p);
+int             fs_close(int fd);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
@@ -218,3 +227,7 @@ void buff_clear(char* buff , int buff_size);
 void path_extend(char*buff , char*parent , char*child  , int buff_size);
 
 #endif
+
+// paging limits ....
+#define MAX_PYSC_PAGES 15
+#define MAX_TOTAL_PAGES 30

@@ -215,9 +215,16 @@ fork(void)
   pid = np->pid;
 
   // to make a .page file for each proc
-  char path[20] = "/_pages/";
-  i2a(np->pid , 8 , path);
-  fs_mkdir(path);
+  char path_np[20] = "/_pages/";
+  char path_cp[20] = "/_pages/";
+  i2a(np->pid , 8 , path_np);
+  i2a(curproc->pid , 8 , path_cp);
+
+  fs_mkdir(path_np);
+
+  // @impliment:
+  // dup dirs contets   _pages/cp->pid/*.page ---->  _pages/np->pid/*.page
+  fs_dupdirs(path_cp , path_np);
 
   acquire(&ptable.lock);
 
@@ -251,7 +258,7 @@ exit(void)
 
   
   begin_op();
-  
+
   // delete .page file of exiting proc
   char path[20] = "/_pages/";
   i2a(curproc->pid , 8 , path);

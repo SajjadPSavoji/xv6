@@ -143,3 +143,12 @@ syscall(void)
     curproc->tf->eax = -1;
   }
 }
+
+void
+pgflt_handler(void)
+{
+  // @impliment:
+  // uint cr2  = rcr2();
+  // pde_t pde = cr2;
+  ////////////////////////////////////////////
+}
