@@ -214,7 +214,12 @@ fork(void)
 
   pid = np->pid;
 
-  fs_open("/_pages/mahta.page" , O_CREATE);
+  // to make a .page file for each proc
+  char path[20] = "/_pages/";
+  i2a(np->pid , 8 , path);
+  fs_mkdir(path);
+  // fs_open(path, O_CREATE);
+  // up to here
 
   acquire(&ptable.lock);
 
@@ -246,6 +251,12 @@ exit(void)
     }
   }
 
+  // delete .page file of exiting proc
+  // char path[20] = "/_pages/";
+  // i2a(curproc->pid , 8 , path);
+  // fs_unlink(path);
+  // up to here
+  
   begin_op();
   iput(curproc->cwd);
   end_op();
@@ -267,6 +278,7 @@ exit(void)
 
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
+
   sched();
   panic("zombie exit");
 }

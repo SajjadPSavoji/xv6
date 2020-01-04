@@ -189,6 +189,32 @@ void            clearpteu(pde_t *pgdir, char *uva);
 // new features added to virtual memory 
 #define PAGES "_pages"
 int             fs_open(char * path , int omode);
+int             fs_unlink(char* path);
+int             fs_unlink_subs(char* path , struct inode *dp);
+int             fs_mkdir(char* path);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
+
+
+// string stuff implemented by me
+
+#ifndef __STRING__STUFF__
+#define __STRING__STUFF__
+#define SLASH '/'
+
+int ndigit(int i);
+
+// assuming i is less than 10 and positive
+char i2c(int i);
+
+// value of buff[index] whould be changed
+void i2a(int i , int index , char* buff);
+
+void buff_clear(char* buff , int buff_size);
+
+// this functon also clears out buffer with nulls
+// almost equal to memset(buff , buff_size , 0)
+void path_extend(char*buff , char*parent , char*child  , int buff_size);
+
+#endif

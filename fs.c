@@ -21,6 +21,74 @@
 #include "buf.h"
 #include "file.h"
 
+// -----------------------------------------------------------------------------------------
+// implimentation of string stuff 
+int ndigit(int i)
+{
+  int n = 1;
+  for (;i/10;i/=10,n+=1); // kheili bahale
+  return n;
+}
+
+// assuming i is less than 10 and positive
+char i2c(int i)
+{
+  return '0' + i;
+}
+
+// value of buff[index] whould be changed
+void i2a(int i , int index , char* buff)
+{
+  char temp[11];
+
+  int n = ndigit(i);
+  for (int j = 0; j < n; j++ , i/=10)
+  {
+    temp[j] = i2c(i%10);
+  }
+
+  for (int j = 0; j < n; j++)
+  {
+    buff[index + j] = temp[n-1-j];
+  }
+  buff[index + n] = 0;
+}
+
+void buff_clear(char* buff , int buff_size)
+{
+  // clear the buffer
+  for (int i = 0; i < buff_size; i++)
+  {
+    buff[i] = 0;
+  }
+}
+
+// this functon also clears out buffer with nulls
+// almost equal to memset(buff , buff_size , 0)
+void path_extend(char*buff , char*parent , char*child  , int buff_size)
+{
+  // clear buffer
+  buff_clear(buff , buff_size);
+
+  // copy parent
+  int i = 0;
+  for (; i < strlen(parent); i++)
+  {
+    buff[i] = parent[i];
+  }
+
+  // put slash
+  buff[i] = SLASH;
+  i++;
+
+  // copy child
+  for (int j = 0; j < strlen(child); j++ , i++)
+  {
+    buff[i] = child[j];
+  }
+}
+// -----------------------------------------------------------------------------------------
+
 #define min(a, b) ((a) < (b) ? (a) : (b))
 static void itrunc(struct inode*);
 // there should be one superblock per disk device, but we run with
@@ -519,6 +587,32 @@ namecmp(const char *s, const char *t)
   return strncmp(s, t, DIRSIZ);
 }
 
+// ----------------------------------------------------------------
+// iterate over sub dirs or subfiles and unlink them
+// neither ip or  dp is locked
+int             
+fs_unlink_subs(char* path , struct inode *dp)
+{
+  char sub_name[5*DIRSIZ];
+  uint off;
+  struct dirent de;
+
+  if(dp->type != T_DIR)
+    panic("fs_unlik_subs: dp not DIR");
+
+  for(off = 2*sizeof(de); off < dp->size; off += sizeof(de)){
+    if(readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+      panic("dirlookup read");
+    if(de.inum == 0)
+      continue;
+    path_extend(sub_name, path, de.name,5*DIRSIZ);
+    fs_unlink(sub_name);
+  }
+
+  return 0;
+
+}
+// ----------------------------------------------------------------
 // Look for a directory entry in a directory.
 // If found, set *poff to byte offset of entry.
 struct inode*
@@ -535,6 +629,7 @@ dirlookup(struct inode *dp, char *name, uint *poff)
       panic("dirlookup read");
     if(de.inum == 0)
       continue;
+
     if(namecmp(name, de.name) == 0){
       // entry matches path element
       if(poff)
