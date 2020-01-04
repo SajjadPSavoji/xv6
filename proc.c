@@ -218,8 +218,6 @@ fork(void)
   char path[20] = "/_pages/";
   i2a(np->pid , 8 , path);
   fs_mkdir(path);
-  // fs_open(path, O_CREATE);
-  // up to here
 
   acquire(&ptable.lock);
 
@@ -251,13 +249,15 @@ exit(void)
     }
   }
 
-  // delete .page file of exiting proc
-  // char path[20] = "/_pages/";
-  // i2a(curproc->pid , 8 , path);
-  // fs_unlink(path);
-  // up to here
   
   begin_op();
+  
+  // delete .page file of exiting proc
+  char path[20] = "/_pages/";
+  i2a(curproc->pid , 8 , path);
+  fs_unlink(path);
+  // up to here
+
   iput(curproc->cwd);
   end_op();
   curproc->cwd = 0;
