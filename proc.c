@@ -226,6 +226,7 @@ fork(void)
   // @impliment:
   // dup dirs contets   _pages/cp->pid/*.page ---->  _pages/np->pid/*.page
   fs_dupdirs(path_cp , path_np);
+  np->total_num_pgflts = 0;
 
   acquire(&ptable.lock);
 

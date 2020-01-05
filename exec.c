@@ -140,6 +140,7 @@ exec(char *path, char **argv)
       goto bad;
   }
 
+  cprintf("size : %d\n" , sz/PAGESZ);
   
   iunlockput(ip);
   end_op();
@@ -185,10 +186,12 @@ exec(char *path, char **argv)
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
 
-  // free some pages in the memory ...
+  // // free some pages in the memory ...
   if(fix_paging(pgdir) < 0)
+  {
+    cprintf("fix pages went to bad\n");
     goto bad;
-
+  }
 
   switchuvm(curproc);
   freevm(oldpgdir);

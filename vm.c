@@ -412,15 +412,14 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 
 int fix_paging(pde_t* pgdir)
 {
-  pte_t *pte;
-  uint pa, i;
+  uint i;
   char *mem;
 
   struct proc *curproc = myproc();
   uint sz = curproc->sz;
 
 
-  if(sz > MAX_TOTAL_PAGES * PAGESZ)
+  if(sz >= MAX_TOTAL_PAGES * PAGESZ)
     return -1;
   if(sz <= MAX_PYSC_PAGES * PAGESZ)
     return 0;
@@ -430,42 +429,17 @@ int fix_paging(pde_t* pgdir)
   // allocate one memory page in the physical main memory
   // and memset it on each iteration
   if((mem = kalloc()) == 0)
-      return -1;
+  {
+    cprintf("mem could not be allocated in fixpages\n");
+    return -1;
+
+  }
 
   // (sz-2)* PGSIZE becuase i assume that the last 2 pages are ustack and kstack
   for(i = MAX_PYSC_PAGES *PGSIZE; i < sz-2*PGSIZE; i += PGSIZE){
     // clear mem
-    memset(mem , 0 , PGSIZE);
-
-    if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
-      panic("fixpaging: pte should exist");
-
-    if((!(*pte & PTE_P)) && (!(*pte & PTE_PG)))
-      panic("fixgpaginf: page not present");
-
-    pa = PTE_ADDR(*pte);
-    // flags = PTE_FLAGS(*pte);
-    
-    memmove(mem, (char*)P2V(pa), PGSIZE);
-    // free the page residing on physical memory
-    kfree((char*)P2V(pa));
-
-    // update PTE
-    *pte = *pte | PTE_PG;
-
-    // store mem into the disk
-    // make strings
-    char buff[50];
-    page_path(buff, curproc->pid, (char*)P2V(pa), 50);
-
-    // make file descriptor
-    int fd = fs_open(buff , O_CREATE | O_WRONLY);
-    if(fd < 0)
-      return -1;
-    if(fs_write(fd , PGSIZE , mem) < 0)
-      return -1;
-    if(fs_close(fd) < 0)
-      return -1;
+    if(page_out(i, mem, pgdir)<0)
+      panic("page out failed\n");
   }
   // unalloc dummy mem
   kfree(mem);
@@ -473,4 +447,114 @@ int fix_paging(pde_t* pgdir)
   return 0;
 }
 
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+
+void
+pgflt_handler(void)
+{
+  // @impliment:
+  struct proc* curproc = myproc();
+  uint cr2  = rcr2();
+  uint va;
+  pde_t* pgdir = curproc->pgdir;
+  char* mem;
+  int fd;
+
+  va = PGROUNDDOWN(cr2);
+  mem = kalloc();
+  if(mem == 0){
+    panic("pg fault handler:  out of memory\n");
+  }
+  memset(mem, 0, PGSIZE);
+
+  // read file
+  char buff[50];
+  page_path(buff, curproc->pid, (uint)va, 50);
+  if((fd = fs_open(buff , O_RDONLY))< 0)
+    panic("pg fault handler: can not open .page file\n");
+
+  fs_read(fd , PGSIZE , mem);
+
+  if(fs_close(fd) < 0)
+    panic("pg fault handler: can not close .page file\n");
+
+  // delete .page file 
+  begin_op();
+  if (fs_unlink(buff))
+    panic("pg fault handler: can not delete .page file\n");
+  end_op();
+
+  // map new page
+  if(mappages(pgdir, (char*)va, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){
+    panic("pg fault handler: out of fucking memory\n");
+  }
+
+  //add one page fault 
+  curproc->total_num_pgflts += 1;
+  // do page out
+
+  cprintf("my pid is: %d\n" , curproc->pid);
+  cprintf("page address : %x\n" , va);
+  cprintf("pte_addr : %x\n" , PTE_ADDR(va));
+  cprintf("v2p : %x\n" , V2P(va));
+  ////////////////////////////////////////////
+}
+
+int
+page_out(int i, char* mem, pde_t* pgdir)
+{
+  struct proc* curproc = myproc();
+  pte_t *pte;
+  uint pa;
+
+  i = PGROUNDDOWN(i);
+  // cprintf("aaaaaaaaaaaaaaa, %x ,%x\n",i, PGROUNDDOWN(i));
+  memset(mem , 0 , PGSIZE);
+
+  if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+    panic("fixpaging: pte should exist");
+
+  if((!(*pte & PTE_P)) && (!(*pte & PTE_PG)))
+    panic("fixgpaginf: page not present");
+
+  pa = PTE_ADDR(*pte);
+  // flags = PTE_FLAGS(*pte);
+  
+  memmove(mem, (char*)P2V(pa), PGSIZE);
+  // free the page residing on physical memory
+  kfree((char*)P2V(pa));
+
+  // update PTE : set PAGEOUT flag and clear PRESENT flag
+  *pte = (*pte | PTE_PG )& ~PTE_P;
+
+  // store mem into the disk
+  // make strings
+  cprintf("%x , %x , %d , %x ,%x  , %x , %x\n" , *pte , P2V(pa), pte , pa , V2P(*pte) , mem , i);
+  char buff[50];
+  page_path(buff, curproc->pid, (uint)i, 50);
+  cprintf("buff:: %s!!!\n" , buff);
+
+  // make file descriptor
+  int fd = fs_open(buff , O_CREATE | O_WRONLY);
+  if(fd < 0)
+  {
+    cprintf("kir1\n");
+    return -1;
+  }
+  if(fs_write(fd , PGSIZE , mem) < 0)
+  {
+
+    cprintf("kir2\n");
+    return -1;
+
+  }
+  if(fs_close(fd) < 0)
+  {
+    cprintf("kir3\n");
+    return -1;
+  }
+  return 0;
+}
 // -----------------------------------------------------------------------------

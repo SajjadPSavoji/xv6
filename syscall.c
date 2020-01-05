@@ -6,6 +6,7 @@
 #include "proc.h"
 #include "x86.h"
 #include "syscall.h"
+#include "fcntl.h"
 
 // User code makes a system call with INT T_SYSCALL.
 // System call number in %eax.
@@ -142,18 +143,4 @@ syscall(void)
             curproc->pid, curproc->name, num);
     curproc->tf->eax = -1;
   }
-}
-
-void
-pgflt_handler(void)
-{
-  // @impliment:
-  uint cr2  = rcr2();
-  pte_t pte = cr2;
-  struct proc* curproc = myproc();
-
-  cprintf("my pid is: %d\n" , curproc->pid);
-  cprintf("page address : %x\n" , pte);
-  cprintf("phys addr : %x\n" , PTE_ADDR(pte));
-  ////////////////////////////////////////////
 }

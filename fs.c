@@ -23,6 +23,12 @@
 
 // -----------------------------------------------------------------------------------------
 // implimentation of string stuff 
+uint ndigit_u(uint i)
+{
+  uint n = 1;
+  for (;i/10;i/=10,n+=1); // kheili bahale
+  return n;
+}
 int ndigit(int i)
 {
   int n = 1;
@@ -52,6 +58,26 @@ void i2a(int i , int index , char* buff)
     buff[index + j] = temp[n-1-j];
   }
   buff[index + n] = 0;
+}
+
+// cast uint to string
+// whould update index  
+void uint2a(uint i, int* index , char* buff)
+{
+  char temp[11];
+
+  int n = ndigit_u(i);
+  for (uint j = 0; j < n; j++ , i/=10)
+  {
+    temp[j] = i2c(i%10);
+  }
+
+  for (int j = 0; j < n; j++)
+  {
+    buff[*index + j] = temp[n-1-j];
+  }
+  buff[*index + n] = 0;
+  *index += n;
 }
 
 void buff_clear(char* buff , int buff_size)
@@ -88,7 +114,7 @@ void path_extend(char*buff , char*parent , char*child  , int buff_size)
   }
 }
 
-void va_extend(char* buff , char* proc_str , char* va , int buff_size)
+void va_extend(char* buff , char* proc_str , uint va , int buff_size)
 {
   const char* type = ".page";
   // clear buffer
@@ -106,10 +132,13 @@ void va_extend(char* buff , char* proc_str , char* va , int buff_size)
   i++;
 
   // put 4 bytes(32bit) address
-  for (int j = 0; j < 4; j++ , i++)
-  {
-    buff[i] = va[j];
-  }
+  // for (int j = 0; j < 4; j += sizeof(char) , i++)
+  // {
+  //   cprintf("bbbbbb%s\n\n", buff);
+  //   buff[i] = va[j];
+  // }
+  uint2a(va , &i , buff);
+
 
   // put .page
   for (int j = 0; j < strlen(type); j++ , i++)
@@ -121,7 +150,7 @@ void va_extend(char* buff , char* proc_str , char* va , int buff_size)
   buff[i] = 0;  
 }
 
-void page_path(char* buff , int pid , char* va , int buff_size)
+void page_path(char* buff , int pid , uint va , int buff_size)
 {
   char proc_str[20] = "/_pages/";
   i2a(pid , 8 , proc_str);
