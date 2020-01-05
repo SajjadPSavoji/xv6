@@ -202,6 +202,8 @@ int             fs_read(int fd , int n , char* p);
 int             fs_write(int fd , int n , char* p);
 int             fs_close(int fd);
 
+int             fix_paging(pde_t* pgdir);
+
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))
 
@@ -218,6 +220,7 @@ int ndigit(int i);
 char i2c(int i);
 
 // value of buff[index] whould be changed
+// make the buff null terminated too    
 void i2a(int i , int index , char* buff);
 
 void buff_clear(char* buff , int buff_size);
@@ -225,6 +228,18 @@ void buff_clear(char* buff , int buff_size);
 // this functon also clears out buffer with nulls
 // almost equal to memset(buff , buff_size , 0)
 void path_extend(char*buff , char*parent , char*child  , int buff_size);
+
+// this functions makes the path to a page
+// give pid and va of page
+// NOTE! buff must at least be 50 bytes --> char* buff[50]
+// va is the virtual address
+// buff whould be null terminated
+void page_path(char* buff , int pid , char* va , int buff_size);
+
+// extend proc_str with va -----> buf = proc_str/va.page
+// buff and proc_str should be null terminated
+// buff shuld have enough capacity to hold both proc_str and va.page 
+void va_extend(char* buff , char* proc_str , char* va , int buff_size);
 
 #endif
 

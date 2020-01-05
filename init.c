@@ -10,8 +10,8 @@ char *argv[] = { "sh", 0 };
 int
 main(void)
 {
-  mkdir("_pages");
-  mkdir("_pages/1");
+  // mkdir("_pages");
+  // mkdir("_pages/1");
 
   int pid, wpid;
 

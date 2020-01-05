@@ -87,6 +87,46 @@ void path_extend(char*buff , char*parent , char*child  , int buff_size)
     buff[i] = child[j];
   }
 }
+
+void va_extend(char* buff , char* proc_str , char* va , int buff_size)
+{
+  const char* type = ".page";
+  // clear buffer
+  buff_clear(buff , buff_size);
+
+  // copy proc_str
+  int i = 0;
+  for (; i < strlen(proc_str); i++)
+  {
+    buff[i] = proc_str[i];
+  }
+
+  // put slash
+  buff[i] = SLASH;
+  i++;
+
+  // put 4 bytes(32bit) address
+  for (int j = 0; j < 4; j++ , i++)
+  {
+    buff[i] = va[j];
+  }
+
+  // put .page
+  for (int j = 0; j < strlen(type); j++ , i++)
+  {
+    buff[i] = type[j];
+  }
+
+  // null terminate again
+  buff[i] = 0;  
+}
+
+void page_path(char* buff , int pid , char* va , int buff_size)
+{
+  char proc_str[20] = "/_pages/";
+  i2a(pid , 8 , proc_str);
+  va_extend(buff , proc_str , va , buff_size);
+}
 // -----------------------------------------------------------------------------------------
 
 #define min(a, b) ((a) < (b) ? (a) : (b))

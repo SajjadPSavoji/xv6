@@ -6,6 +6,7 @@
 #include "mmu.h"
 #include "proc.h"
 #include "elf.h"
+#include "fcntl.h"
 
 extern char data[];  // defined by kernel.ld
 pde_t *kpgdir;  // for use in scheduler()
@@ -407,3 +408,69 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
 //PAGEBREAK!
 // Blank page.
 
+// -----------------------------------------------------------------------------
+
+int fix_paging(pde_t* pgdir)
+{
+  pte_t *pte;
+  uint pa, i;
+  char *mem;
+
+  struct proc *curproc = myproc();
+  uint sz = curproc->sz;
+
+
+  if(sz > MAX_TOTAL_PAGES * PAGESZ)
+    return -1;
+  if(sz <= MAX_PYSC_PAGES * PAGESZ)
+    return 0;
+
+  // allocate a dumy mem to copy page content
+  // only becuase its the only way i know
+  // allocate one memory page in the physical main memory
+  // and memset it on each iteration
+  if((mem = kalloc()) == 0)
+      return -1;
+
+  // (sz-2)* PGSIZE becuase i assume that the last 2 pages are ustack and kstack
+  for(i = MAX_PYSC_PAGES *PGSIZE; i < sz-2*PGSIZE; i += PGSIZE){
+    // clear mem
+    memset(mem , 0 , PGSIZE);
+
+    if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+      panic("fixpaging: pte should exist");
+
+    if((!(*pte & PTE_P)) && (!(*pte & PTE_PG)))
+      panic("fixgpaginf: page not present");
+
+    pa = PTE_ADDR(*pte);
+    // flags = PTE_FLAGS(*pte);
+    
+    memmove(mem, (char*)P2V(pa), PGSIZE);
+    // free the page residing on physical memory
+    kfree((char*)P2V(pa));
+
+    // update PTE
+    *pte = *pte | PTE_PG;
+
+    // store mem into the disk
+    // make strings
+    char buff[50];
+    page_path(buff, curproc->pid, (char*)P2V(pa), 50);
+
+    // make file descriptor
+    int fd = fs_open(buff , O_CREATE | O_WRONLY);
+    if(fd < 0)
+      return -1;
+    if(fs_write(fd , PGSIZE , mem) < 0)
+      return -1;
+    if(fs_close(fd) < 0)
+      return -1;
+  }
+  // unalloc dummy mem
+  kfree(mem);
+  // on success
+  return 0;
+}
+
+// -----------------------------------------------------------------------------

@@ -148,7 +148,12 @@ void
 pgflt_handler(void)
 {
   // @impliment:
-  // uint cr2  = rcr2();
-  // pde_t pde = cr2;
+  uint cr2  = rcr2();
+  pte_t pte = cr2;
+  struct proc* curproc = myproc();
+
+  cprintf("my pid is: %d\n" , curproc->pid);
+  cprintf("page address : %x\n" , pte);
+  cprintf("phys addr : %x\n" , PTE_ADDR(pte));
   ////////////////////////////////////////////
 }

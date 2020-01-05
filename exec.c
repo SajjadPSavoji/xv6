@@ -6,6 +6,70 @@
 #include "defs.h"
 #include "x86.h"
 #include "elf.h"
+#include "fcntl.h"
+
+// int fix_paging(pde_t* pgdir)
+// {
+//   pte_t *pte;
+//   uint pa, i;
+//   char *mem;
+
+//   struct proc *curproc = myproc();
+//   uint sz = curproc->sz;
+
+
+//   if(sz > MAX_TOTAL_PAGES)
+//     return -1;
+//   if(sz <= MAX_PYSC_PAGES)
+//     return 0;
+
+//   // allocate a dumy mem to copy page content
+//   // only becuase its the only way i know
+//   // allocate one memory page in the physical main memory
+//   // and memset it on each iteration
+//   if((mem = kalloc()) == 0)
+//       return -1;
+
+//   // (sz-2)* PGSIZE becuase i assume that the last 2 pages are ustack and kstack
+//   for(i = MAX_PYSC_PAGES *PGSIZE; i < sz-2*PGSIZE; i += PGSIZE){
+//     // clear mem
+//     memset(mem , 0 , PGSIZE);
+
+//     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+//       panic("fixpaging: pte should exist");
+
+//     if((!(*pte & PTE_P)) && (!(*pte & PTE_PG)))
+//       panic("fixgpaginf: page not present");
+
+//     pa = PTE_ADDR(*pte);
+//     // flags = PTE_FLAGS(*pte);
+    
+//     memmove(mem, (char*)P2V(pa), PGSIZE);
+//     // free the page residing on physical memory
+//     kfree((char*)P2V(pa));
+
+//     // update PTE
+//     *pte = *pte | PTE_PG;
+
+//     // store mem into the disk
+//     // make strings
+//     char buff[50];
+//     page_path(buff, curproc->pid, (char*)P2V(pa), 50);
+
+//     // make file descriptor
+//     int fd = fs_open(buff , O_CREATE | O_WRONLY);
+//     if(fd < 0)
+//       return -1;
+//     if(fs_write(fd , PGSIZE , mem) < 0)
+//       return -1;
+//     if(fs_close(fd) < 0)
+//       return -1;
+//   }
+//   // unalloc dummy mem
+//   kfree(mem);
+//   // on success
+//   return 0;
+// }
 
 int
 exec(char *path, char **argv)
@@ -18,6 +82,25 @@ exec(char *path, char **argv)
   struct proghdr ph;
   pde_t *pgdir, *oldpgdir;
   struct proc *curproc = myproc();
+
+
+  // @implimentrd: --------------------
+  if (curproc->pid == 1)
+  {
+    fs_mkdir("/_pages");
+    fs_mkdir("/_pages/1");
+  }
+  else
+  {
+    // unlink current dir and make a new one
+    char dummy_path[20] = "/_pages/";
+    i2a(curproc->pid , 8 , dummy_path);
+    begin_op();
+    fs_unlink(dummy_path);
+    end_op();
+    fs_mkdir(dummy_path);  
+  }
+  // -----------------------------------
 
   begin_op();
 
@@ -56,6 +139,8 @@ exec(char *path, char **argv)
     if(loaduvm(pgdir, (char*)ph.vaddr, ip, ph.off, ph.filesz) < 0)
       goto bad;
   }
+
+  
   iunlockput(ip);
   end_op();
   ip = 0;
@@ -99,8 +184,16 @@ exec(char *path, char **argv)
   curproc->sz = sz;
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
+
+  // free some pages in the memory ...
+  if(fix_paging(pgdir) < 0)
+    goto bad;
+
+
   switchuvm(curproc);
   freevm(oldpgdir);
+
+
   return 0;
 
  bad:
