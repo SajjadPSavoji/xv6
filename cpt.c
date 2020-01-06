@@ -68,7 +68,6 @@ int
 main(int argc, char *argv[])
 {  
     // while (1);
-    
     for (int i = 75000; i < 80000; i++)
     {
         // printf(1 , "%x , %x\n" , &sina[i] , &sina[i]);

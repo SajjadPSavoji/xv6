@@ -187,11 +187,16 @@ exec(char *path, char **argv)
   curproc->tf->esp = sp;
 
   // // free some pages in the memory ...
-  if(fix_paging(pgdir) < 0)
-  {
-    cprintf("fix pages went to bad\n");
-    goto bad;
-  }
+  #ifndef NONE
+    if(fix_paging(pgdir) < 0)
+    {
+      cprintf("fix pages went to bad\n");
+      goto bad;
+    }
+
+    // init cp->pages
+    init_proc_pages();
+  #endif
 
   switchuvm(curproc);
   freevm(oldpgdir);

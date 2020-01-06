@@ -222,11 +222,15 @@ fork(void)
 
   fs_mkdir(path_np);
 
-
   // @impliment:
   // dup dirs contets   _pages/cp->pid/*.page ---->  _pages/np->pid/*.page
   fs_dupdirs(path_cp , path_np);
   np->total_num_pgflts = 0;
+  #ifndef NONE
+    // dup proc->pages
+    dup_proc_pages(curproc , np);
+  #endif
+  // ---------------------------------------------------------------------
 
   acquire(&ptable.lock);
 
@@ -236,6 +240,26 @@ fork(void)
 
   return pid;
 }
+
+// -------------------------------------------------------------
+// this function duplicates pages recordings for each proc
+void dup_proc_pages(struct proc* cp , struct proc* np)
+{
+  // dup index
+  np->index_page = cp->index_page;
+  // int lim = MAX_PYSC_PAGES;
+  // if(cp->sz <= MAX_PYSC_PAGES * PGSIZE)
+  //   lim = cp->sz/PGSIZE +1;
+  for (int i = 0; i < MAX_PYSC_PAGES; i++)
+  {
+    np->pages[i].va = cp->pages[i].va;
+    // np->pages[i].age = cp->pages[i].age;
+    // np->pages[i].freq = cp->pages[i].freq;
+    // add any other field duplication here
+  }
+}
+
+// -------------------------------------------------------------
 
 // Exit the current process.  Does not return.
 // An exited process remains in the zombie state

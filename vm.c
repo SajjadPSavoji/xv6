@@ -418,7 +418,6 @@ int fix_paging(pde_t* pgdir)
   struct proc *curproc = myproc();
   uint sz = curproc->sz;
 
-
   if(sz >= MAX_TOTAL_PAGES * PAGESZ)
     return -1;
   if(sz <= MAX_PYSC_PAGES * PAGESZ)
@@ -436,7 +435,7 @@ int fix_paging(pde_t* pgdir)
   }
 
   // (sz-2)* PGSIZE becuase i assume that the last 2 pages are ustack and kstack
-  for(i = MAX_PYSC_PAGES *PGSIZE; i < sz-2*PGSIZE; i += PGSIZE){
+  for(i = MAX_PYSC_PAGES *PGSIZE; i < sz; i += PGSIZE){
     // clear mem
     if(page_out(i, mem, pgdir)<0)
       panic("page out failed\n");
@@ -450,6 +449,42 @@ int fix_paging(pde_t* pgdir)
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
+// this functions initializes proc->pages recording
+// NOTE: should be called after fix_paging
+void init_proc_pages()
+{
+  uint i;
+  int j;
+
+  struct proc *curproc = myproc();
+  uint sz = curproc->sz;
+
+  int lim = 0;
+  curproc->index_page = 0;
+
+
+  if(sz >= MAX_TOTAL_PAGES * PAGESZ)
+    panic("init proc pages: should have checked in fix_paging");
+
+  if(sz <= MAX_PYSC_PAGES * PAGESZ)
+    lim = sz;
+
+  if(sz >  MAX_PYSC_PAGES * PAGESZ)
+    lim =  MAX_PYSC_PAGES * PAGESZ;
+
+  
+
+  for(j = 0 , i = 0; i < lim; i += PGSIZE , j++){
+      curproc->pages[j].va = PGROUNDDOWN(i);
+      // curproc->pages[j].age  = 0;
+      // curproc->pages[j].freq = 0;
+
+      // add any other fileds should be added here
+  }
+}
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
 
 void
 pgflt_handler(void)
@@ -458,65 +493,75 @@ pgflt_handler(void)
   struct proc* curproc = myproc();
   uint cr2  = rcr2();
   uint va;
-  pde_t* pgdir = curproc->pgdir;
   char* mem;
-  int fd;
+
+  //add one page fault 
+  curproc->total_num_pgflts += 1;
 
   va = PGROUNDDOWN(cr2);
+
+  page_out_handler();
+
   mem = kalloc();
   if(mem == 0){
     panic("pg fault handler:  out of memory\n");
   }
   memset(mem, 0, PGSIZE);
+  page_in(va , mem);
 
-  // read file
-  char buff[50];
-  page_path(buff, curproc->pid, (uint)va, 50);
-  if((fd = fs_open(buff , O_RDONLY))< 0)
-    panic("pg fault handler: can not open .page file\n");
+  // // read file
+  // char buff[50];
+  // page_path(buff, curproc->pid, (uint)va, 50);
+  // if((fd = fs_open(buff , O_RDONLY))< 0)
+  //   panic("pg fault handler: can not open .page file\n");
 
-  fs_read(fd , PGSIZE , mem);
+  // fs_read(fd , PGSIZE , mem);
 
-  if(fs_close(fd) < 0)
-    panic("pg fault handler: can not close .page file\n");
+  // if(fs_close(fd) < 0)
+  //   panic("pg fault handler: can not close .page file\n");
 
-  // delete .page file 
-  begin_op();
-  if (fs_unlink(buff))
-    panic("pg fault handler: can not delete .page file\n");
-  end_op();
+  // // delete .page file 
+  // begin_op();
+  // if (fs_unlink(buff))
+  //   panic("pg fault handler: can not delete .page file\n");
+  // end_op();
 
-  // map new page
-  if(mappages(pgdir, (char*)va, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){
-    panic("pg fault handler: out of fucking memory\n");
-  }
+  // // map new page
+  // if(mappages(pgdir, (char*)va, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){
+  //   panic("pg fault handler: out of fucking memory\n");
+  // }
 
-  //add one page fault 
-  curproc->total_num_pgflts += 1;
   // do page out
 
-  cprintf("my pid is: %d\n" , curproc->pid);
-  cprintf("page address : %x\n" , va);
-  cprintf("pte_addr : %x\n" , PTE_ADDR(va));
-  cprintf("v2p : %x\n" , V2P(va));
+  // cprintf("my pid is: %d\n" , curproc->pid);
+  // cprintf("page address : %x\n" , va);
+  // cprintf("pte_addr : %x\n" , PTE_ADDR(va));
+  // cprintf("v2p : %x\n" , V2P(va));
   ////////////////////////////////////////////
 }
 
+// -----------------------------------------------------------------
+// this function impliments a pageout given pre allocated  mem
+// and cp->pgdir , and the virtual memory i(va)
+// it also updates pte and pde flags and writes a .page file to 
+// the /_pages/cp->pid/i.page
+// it also frees the kernel memory previously occupied by the va
 int
-page_out(int i, char* mem, pde_t* pgdir)
+page_out(uint i, char* mem, pde_t* pgdir)
 {
   struct proc* curproc = myproc();
   pte_t *pte;
   uint pa;
 
-  i = PGROUNDDOWN(i);
+  // i = PGROUNDDOWN(i);
   // cprintf("aaaaaaaaaaaaaaa, %x ,%x\n",i, PGROUNDDOWN(i));
   memset(mem , 0 , PGSIZE);
 
-  if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
+  if((pte = walkpgdir(pgdir, (char*) i, 0)) == 0)
     panic("fixpaging: pte should exist");
 
-  if((!(*pte & PTE_P)) && (!(*pte & PTE_PG)))
+
+  if(!(((*pte) & PTE_P)))
     panic("fixgpaginf: page not present");
 
   pa = PTE_ADDR(*pte);
@@ -531,7 +576,7 @@ page_out(int i, char* mem, pde_t* pgdir)
 
   // store mem into the disk
   // make strings
-  cprintf("%x , %x , %d , %x ,%x  , %x , %x\n" , *pte , P2V(pa), pte , pa , V2P(*pte) , mem , i);
+  cprintf("paged out %x\n" ,i);
   char buff[50];
   page_path(buff, curproc->pid, (uint)i, 50);
   cprintf("buff:: %s!!!\n" , buff);
@@ -558,3 +603,164 @@ page_out(int i, char* mem, pde_t* pgdir)
   return 0;
 }
 // -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// cp->index will be added
+// mem should not be freed afterward
+int
+page_in(uint va , char* mem)
+{
+  struct proc* curproc = myproc();
+  pde_t* pgdir = curproc->pgdir;
+  int fd;
+
+  // make approp path
+  char buff[50];
+  page_path(buff, curproc->pid, (uint)va, 50);
+
+  // open va.page
+  if((fd = fs_open(buff , O_RDONLY))< 0)
+    panic("pg fault handler: can not open .page file\n");
+  
+  // rem from va.page 
+  fs_read(fd , PGSIZE , mem);
+  if(fs_close(fd) < 0)
+    panic("pg fault handler: can not close .page file\n");
+
+  // delete .page file 
+  begin_op();
+  if (fs_unlink(buff))
+    panic("pg fault handler: can not delete .page file\n");
+  end_op();
+
+  // map new page
+  if(mappages(pgdir, (char*)va, PGSIZE, V2P(mem), PTE_W|PTE_U) < 0){
+    panic("pg fault handler: out of fucking memory\n");
+  }
+
+  // update cp->pages
+  curproc->pages[curproc->index_page].va = va;
+  // curproc->pages[curproc->index_page].age = 0;
+  // curproc->pages[curproc->index_page].freq = 0;
+
+  // add any other fields
+  curproc->index_page = (curproc->index_page + 1)%MAX_PYSC_PAGES;
+
+  cprintf("%x paged in\n" , va);
+  return 0;
+}
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+void 
+page_out_handler()
+{
+
+  #ifdef NONE
+  panic("i am rnning : NONE");
+  #endif
+
+  #ifdef FIFO
+  page_sched_fifo();
+  cprintf("i am rnning : FIFO\n");
+  #endif
+
+  #ifdef LRU
+  page_sched_lru();
+  cprintf("i am rnning : LRU\n");
+  #endif
+
+  #ifdef CLOCK
+  page_sched_clock();
+  cprintf("i am rnning : CLOCK\n");
+  #endif
+
+  #ifdef NFU
+  page_sched_nfu();
+  cprintf("i am rnning : NFU\n");
+  #endif
+
+}
+// -------------------------------------------------------
+
+// schedulers --------------------------------------------
+void page_sched_fifo(void)
+{
+  // init mem
+  char* mem;
+  mem = kalloc();
+  if(mem == 0){
+    panic("pg fault handler:  out of memory\n");
+  }
+  memset(mem, 0, PGSIZE);
+
+  struct proc* curproc = myproc();
+
+  page_out(curproc->pages[curproc->index_page].va, mem, curproc->pgdir);
+  // kfree(mem);
+}
+
+// np->index should be updated for page_in
+void page_sched_lru(void)
+{
+  // // init mem
+  // char* mem;
+  // mem = kalloc();
+  // if(mem == 0){
+  //   panic("pg fault handler:  out of memory\n");
+  // }
+  // memset(mem, 0, PGSIZE);
+
+  // struct proc* curproc = myproc();
+
+  // int max_idx = -1;
+  // int max_age = -1;
+
+  // for (int i = 0; i < MAX_PYSC_PAGES; i++)
+  // {
+  //   if(curproc->pages[i].age > max_age)
+  //   {
+  //     max_age = curproc->pages[i].age;
+  //     max_idx = i;
+  //   }
+  // }
+
+  // // for page in
+  // curproc->index_page  = max_idx;
+  
+  // page_out(curproc->pages[curproc->index_page].va, mem, curproc->pgdir);
+}
+
+void page_sched_nfu(void)
+{
+  // // init mem
+  // char* mem;
+  // mem = kalloc();
+  // if(mem == 0){
+  //   panic("pg fault handler:  out of memory\n");
+  // }
+  // memset(mem, 0, PGSIZE);
+
+  // struct proc* curproc = myproc();
+  // int min_idx  =  0;
+  // int min_freq = __INT32_MAX__;
+
+  // for (int i = 0; i < MAX_PYSC_PAGES; i++)
+  // {
+  //   if(curproc->pages[i].freq < min_freq)
+  //   {
+  //     min_freq = curproc->pages[i].freq;
+  //     min_idx = i;
+  //   }
+  // }
+
+  // // for page in
+  // curproc->index_page  = min_idx;
+  
+  // page_out(curproc->pages[curproc->index_page].va, mem, curproc->pgdir);
+}
+
+void page_sched_clock(void)
+{
+}
+// ----------------------------------------------------------------------

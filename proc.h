@@ -34,7 +34,14 @@ struct context {
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
+struct page{
+  uint va;
+  // uint freq;
+  // uint age;
+};
 
+#define MX_PHYC_PAGES 15
+#define MX_TOTAL_PAGES 30
 
 // Per-process state
 struct proc {
@@ -53,6 +60,8 @@ struct proc {
   char name[16];               // Process name (debugging)
   //-----------------------------------------------------------------------
   int total_num_pgflts;        // total number of page faults
+  int index_page;
+  struct page pages[MX_PHYC_PAGES];
 
 };
 

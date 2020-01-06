@@ -249,5 +249,14 @@ void va_extend(char* buff , char* proc_str , uint va , int buff_size);
 #define MAX_PYSC_PAGES 15
 #define MAX_TOTAL_PAGES 30
 // page out
-int
-page_out(int i, char* mem, pde_t* pgdir);
+int  page_out(uint i, char* mem, pde_t* pgdir);
+int  page_in(uint va , char* mem);
+void dup_proc_pages(struct proc* cp , struct proc* np);
+void init_proc_pages(void);
+void page_out_handler(void);
+
+// schedulers
+void page_sched_fifo(void);
+void page_sched_lru(void);
+void page_sched_nfu(void);
+void page_sched_clock(void);
