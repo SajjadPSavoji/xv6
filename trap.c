@@ -51,6 +51,15 @@ trap(struct trapframe *tf)
     if(cpuid() == 0){
       acquire(&tickslock);
       ticks++;
+      #ifdef LRU
+        // cprintf("first of timer:\n");
+        lru_rec();
+        // cprintf("end of timer\n");
+      #endif
+      #ifdef NFU
+        nfu_rec();
+      #endif
+
       wakeup(&ticks);
       release(&tickslock);
     }
@@ -80,6 +89,14 @@ trap(struct trapframe *tf)
 
   case T_PGFLT:
     cprintf("us: page fault\n");
+    #ifdef LRU
+        // cprintf("first of timer:\n");
+        lru_rec();
+        // cprintf("end of timer\n");
+      #endif
+      #ifdef NFU
+        nfu_rec();
+      #endif
     pgflt_handler();
     break;
 

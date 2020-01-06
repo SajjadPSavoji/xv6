@@ -72,7 +72,7 @@ QEMU = $(shell if which qemu > /dev/null; \
 endif
 
 ifndef SELECTION
-SELECTION := NONE
+SELECTION := LRU
 endif
 
 ifndef VERBOSE_PRINT

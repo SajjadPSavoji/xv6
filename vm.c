@@ -476,8 +476,8 @@ void init_proc_pages()
 
   for(j = 0 , i = 0; i < lim; i += PGSIZE , j++){
       curproc->pages[j].va = PGROUNDDOWN(i);
-      // curproc->pages[j].age  = 0;
-      // curproc->pages[j].freq = 0;
+      curproc->pages[j].age  = 0;
+      curproc->pages[j].freq = 0;
 
       // add any other fileds should be added here
   }
@@ -499,8 +499,10 @@ pgflt_handler(void)
   curproc->total_num_pgflts += 1;
 
   va = PGROUNDDOWN(cr2);
+  // acquire(&tickslock);
 
   page_out_handler();
+  // release(&tickslock);
 
   mem = kalloc();
   if(mem == 0){
@@ -509,6 +511,7 @@ pgflt_handler(void)
   memset(mem, 0, PGSIZE);
   page_in(va , mem);
 
+  for(int i = 0; i < 1000; i++);
   // // read file
   // char buff[50];
   // page_path(buff, curproc->pid, (uint)va, 50);
@@ -640,8 +643,8 @@ page_in(uint va , char* mem)
 
   // update cp->pages
   curproc->pages[curproc->index_page].va = va;
-  // curproc->pages[curproc->index_page].age = 0;
-  // curproc->pages[curproc->index_page].freq = 0;
+  curproc->pages[curproc->index_page].age = 0;
+  curproc->pages[curproc->index_page].freq = 0;
 
   // add any other fields
   curproc->index_page = (curproc->index_page + 1)%MAX_PYSC_PAGES;
@@ -697,70 +700,133 @@ void page_sched_fifo(void)
   struct proc* curproc = myproc();
 
   page_out(curproc->pages[curproc->index_page].va, mem, curproc->pgdir);
-  // kfree(mem);
+  kfree(mem);
 }
 
 // np->index should be updated for page_in
 void page_sched_lru(void)
 {
-  // // init mem
-  // char* mem;
-  // mem = kalloc();
-  // if(mem == 0){
-  //   panic("pg fault handler:  out of memory\n");
-  // }
-  // memset(mem, 0, PGSIZE);
+  // init mem
+  char* mem;
+  mem = kalloc();
+  if(mem == 0){
+    panic("pg fault handler:  out of memory\n");
+  }
+  memset(mem, 0, PGSIZE);
 
-  // struct proc* curproc = myproc();
+  struct proc* curproc = myproc();
 
-  // int max_idx = -1;
-  // int max_age = -1;
+  uint max_idx = 0;
+  uint max_age = 0;
 
-  // for (int i = 0; i < MAX_PYSC_PAGES; i++)
-  // {
-  //   if(curproc->pages[i].age > max_age)
-  //   {
-  //     max_age = curproc->pages[i].age;
-  //     max_idx = i;
-  //   }
-  // }
-
-  // // for page in
-  // curproc->index_page  = max_idx;
+  for (int i = 0; i < MAX_PYSC_PAGES; i++)
+  {
+    cprintf("recording : %d , %x\n" , i , curproc->pages[i].age);
+    if((curproc->pages[i].age) >= max_age)
+    {
+      max_age = curproc->pages[i].age;
+      max_idx = i;
+    }
+  }
+    cprintf("selected: %x , %x \n" , max_idx , max_age);
+  // for page in
+  curproc->index_page  = max_idx;
   
-  // page_out(curproc->pages[curproc->index_page].va, mem, curproc->pgdir);
+  page_out(curproc->pages[curproc->index_page].va, mem, curproc->pgdir);
+  kfree(mem);
 }
 
 void page_sched_nfu(void)
 {
-  // // init mem
-  // char* mem;
-  // mem = kalloc();
-  // if(mem == 0){
-  //   panic("pg fault handler:  out of memory\n");
-  // }
-  // memset(mem, 0, PGSIZE);
+  // init mem
+  char* mem;
+  mem = kalloc();
+  if(mem == 0){
+    panic("pg fault handler:  out of memory\n");
+  }
+  memset(mem, 0, PGSIZE);
 
-  // struct proc* curproc = myproc();
-  // int min_idx  =  0;
-  // int min_freq = __INT32_MAX__;
+  struct proc* curproc = myproc();
+  uint min_idx  =  0;
+  uint min_freq = __UINT32_MAX__;
 
-  // for (int i = 0; i < MAX_PYSC_PAGES; i++)
-  // {
-  //   if(curproc->pages[i].freq < min_freq)
-  //   {
-  //     min_freq = curproc->pages[i].freq;
-  //     min_idx = i;
-  //   }
-  // }
+  for (int i = 0; i < MAX_PYSC_PAGES; i++)
+  {
+    if(curproc->pages[i].freq <= min_freq)
+    {
+      min_freq = curproc->pages[i].freq;
+      min_idx = i;
+    }
+  }
 
-  // // for page in
-  // curproc->index_page  = min_idx;
+  // for page in
+  curproc->index_page  = min_idx;
   
-  // page_out(curproc->pages[curproc->index_page].va, mem, curproc->pgdir);
+  page_out(curproc->pages[curproc->index_page].va, mem, curproc->pgdir);
+  kfree(mem);
 }
 
 void page_sched_clock(void)
 {
+}
+
+void lru_rec(void)
+{
+  // cprintf("AAAAAAAAAAAA\n");
+  struct proc* curproc = myproc();
+  if(curproc == 0)
+    return;
+  // cprintf("BBBBBBBBBBBB\n");
+  if(curproc->sz <= MAX_PYSC_PAGES * PGSIZE)
+    return;
+
+  pte_t* pte;
+  for (int i = 0; i < MAX_PYSC_PAGES; i++)
+  {
+    pte = walkpgdir(curproc->pgdir , (char*)curproc->pages[i].va , 0);
+    if((*pte )& PTE_A)
+    {
+      cprintf("%d\n\n", i);
+      curproc->pages[i].age = 0;
+    }
+    else
+    {
+      // cprintf("aaaaaa%d\n" , curproc->pages[i].age);
+      curproc->pages[i].age++;
+    }
+    // clear access flag
+    cprintf("aaaaaa%d\n" , curproc->pages[i].age);
+    *pte = *pte & ~PTE_A;
+  }
+}
+
+void nfu_rec(void)
+{
+   // cprintf("AAAAAAAAAAAA\n");
+  struct proc* curproc = myproc();
+  if(curproc == 0)
+    return;
+  // cprintf("BBBBBBBBBBBB\n");
+  if(curproc->sz <= MAX_PYSC_PAGES * PGSIZE)
+    return;
+
+  pte_t* pte;
+  for (int i = 0; i < MAX_PYSC_PAGES; i++)
+  {
+    pte = walkpgdir(curproc->pgdir , (char*)curproc->pages[i].va , 0);
+    if((*pte )& PTE_A)
+    {
+      cprintf("%d\n\n", i);
+      curproc->pages[i].freq ++;
+    }
+    else
+    {
+      // cprintf("aaaaaa%d\n" , curproc->pages[i].age);
+      // curproc->pages[i].freq = 0;
+    }
+    // clear access flag
+    cprintf("aaaaaa%d\n" , curproc->pages[i].freq);
+    *pte = *pte & ~PTE_A;
+  }
 }
 // ----------------------------------------------------------------------

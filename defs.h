@@ -260,3 +260,7 @@ void page_sched_fifo(void);
 void page_sched_lru(void);
 void page_sched_nfu(void);
 void page_sched_clock(void);
+
+// schedulers recordingd
+void lru_rec(void);
+void nfu_rec(void);

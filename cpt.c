@@ -68,13 +68,13 @@ int
 main(int argc, char *argv[])
 {  
     // while (1);
-    for (int i = 75000; i < 80000; i++)
+    for (int i = 0; i < 80000; i++)
     {
         // printf(1 , "%x , %x\n" , &sina[i] , &sina[i]);
         sina[i] += '0';
     }
      printf(1 , "done with the mem\n");
-    while(1);
+    // while(1);
     // switch (argc)
     // {
     // case 1:

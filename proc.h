@@ -36,8 +36,8 @@ enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
 
 struct page{
   uint va;
-  // uint freq;
-  // uint age;
+  uint freq;
+  uint age;
 };
 
 #define MX_PHYC_PAGES 15

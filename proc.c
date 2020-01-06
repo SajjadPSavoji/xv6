@@ -252,9 +252,9 @@ void dup_proc_pages(struct proc* cp , struct proc* np)
   //   lim = cp->sz/PGSIZE +1;
   for (int i = 0; i < MAX_PYSC_PAGES; i++)
   {
-    np->pages[i].va = cp->pages[i].va;
-    // np->pages[i].age = cp->pages[i].age;
-    // np->pages[i].freq = cp->pages[i].freq;
+    np->pages[i].va   = cp->pages[i].va;
+    np->pages[i].age  = cp->pages[i].age;
+    np->pages[i].freq = cp->pages[i].freq;
     // add any other field duplication here
   }
 }
