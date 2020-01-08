@@ -79,6 +79,10 @@ cprintf(char *fmt, ...)
     case 'd':
       printint(*argp++, 10, 1);
       break;
+    case 'f':
+      consputc('.');
+      printint(*argp++, 10, 1);
+      break;
     case 'x':
     case 'p':
       printint(*argp++, 16, 0);

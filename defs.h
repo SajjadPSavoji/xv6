@@ -264,3 +264,7 @@ void page_sched_clock(void);
 // schedulers recordingd
 void lru_rec(void);
 void nfu_rec(void);
+void verbos_print(struct proc* p);
+int len_free_list(void);
+int prec_free_pages(void);
+int l0;

@@ -768,6 +768,30 @@ void page_sched_nfu(void)
 
 void page_sched_clock(void)
 {
+  // init mem
+  char* mem;
+  mem = kalloc();
+  if(mem == 0){
+    panic("pg fault handler:  out of memory\n");
+  }
+  memset(mem, 0, PGSIZE);
+
+  struct proc* curproc = myproc();
+  pte_t* pte;
+
+  for (;; curproc->index_page = (curproc->index_page + 1)%MAX_PYSC_PAGES)
+  {
+    if((pte = walkpgdir(curproc->pgdir, (char*) curproc->pages[curproc->index_page].va, 0)) == 0)
+      panic("fixpaging: pte should exist");
+    // if page was not accessed
+    if(!((*pte )& PTE_A))
+      break;
+    // give second chance (clear access bit of page)
+    (*pte) = (*pte)&(~PTE_A);  
+  }
+  cprintf("selected: %x\n" , curproc->index_page);
+  page_out(curproc->pages[curproc->index_page].va, mem, curproc->pgdir);
+  kfree(mem);
 }
 
 void lru_rec(void)

@@ -73,7 +73,8 @@ main(int argc, char *argv[])
         // printf(1 , "%x , %x\n" , &sina[i] , &sina[i]);
         sina[i] += '0';
     }
-     printf(1 , "done with the mem\n");
+    // while(1);
+    printf(1 , "done with the mem\n");
     // while(1);
     // switch (argc)
     // {

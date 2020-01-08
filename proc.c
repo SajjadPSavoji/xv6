@@ -274,6 +274,10 @@ exit(void)
   if(curproc == initproc)
     panic("init exiting");
 
+  #ifndef P_FALSE
+    verbos_print(curproc);
+  #endif
+
   // Close all open files.
   for(fd = 0; fd < NOFILE; fd++){
     if(curproc->ofile[fd]){
@@ -564,6 +568,8 @@ procdump(void)
   struct proc *p;
   char *state;
   uint pc[10];
+  
+  cprintf("\n");
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->state == UNUSED)
@@ -578,6 +584,15 @@ procdump(void)
       for(i=0; i<10 && pc[i] != 0; i++)
         cprintf(" %p", pc[i]);
     }
-    cprintf("\n");
+    verbos_print(p);
   }
+}
+
+void verbos_print(struct proc* p)
+{
+  cprintf("\nalloced pgs: %d\n" , (p->sz > MAX_PYSC_PAGES * PGSIZE)?MAX_PYSC_PAGES:(((p->sz)/PAGESZ) -2));
+  cprintf("out pgs: %d\n" , (p->sz <= MAX_PYSC_PAGES * PGSIZE)?0:-MAX_PYSC_PAGES + (((p->sz)/PAGESZ)));
+  cprintf("num pgflts: %d\n" , p->total_num_pgflts);
+  cprintf("perc freepgs: %f\n" , prec_free_pages());
+  cprintf("\n---------------------------------------------\n");
 }

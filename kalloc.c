@@ -94,3 +94,27 @@ kalloc(void)
   return (char*)r;
 }
 
+//------------------------------------------------------------------------------------
+// calculates len freelist
+int len_free_list(void)
+{
+  struct run* r;
+  int len = 0;
+
+  if(kmem.use_lock)
+    acquire(&kmem.lock);
+  r = kmem.freelist;
+
+  for (int i = 0;r->next != 0; i++ , len++ , r = r->next);
+
+  if(kmem.use_lock)
+    release(&kmem.lock);
+  return len;
+}
+int prec_free_pages(void)
+{
+  return len_free_list()*1000000/l0;  
+}
+
+// -----------------------------------------------------------------------------------
+
