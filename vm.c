@@ -582,7 +582,7 @@ page_out(uint i, char* mem, pde_t* pgdir)
   cprintf("paged out %x\n" ,i);
   char buff[50];
   page_path(buff, curproc->pid, (uint)i, 50);
-  cprintf("buff:: %s!!!\n" , buff);
+  // cprintf("paged out:: %s!!!\n" , buff);
 
   // make file descriptor
   int fd = fs_open(buff , O_CREATE | O_WRONLY);
@@ -721,14 +721,14 @@ void page_sched_lru(void)
 
   for (int i = 0; i < MAX_PYSC_PAGES; i++)
   {
-    cprintf("recording : %d , %x\n" , i , curproc->pages[i].age);
+    // cprintf("recording : %d , %x\n" , i , curproc->pages[i].age);
     if((curproc->pages[i].age) >= max_age)
     {
       max_age = curproc->pages[i].age;
       max_idx = i;
     }
   }
-    cprintf("selected: %x , %x \n" , max_idx , max_age);
+    // cprintf("selected: %x , %x \n" , max_idx , max_age);
   // for page in
   curproc->index_page  = max_idx;
   
@@ -789,7 +789,7 @@ void page_sched_clock(void)
     // give second chance (clear access bit of page)
     (*pte) = (*pte)&(~PTE_A);  
   }
-  cprintf("selected: %x\n" , curproc->index_page);
+  // cprintf("selected: %x\n" , curproc->index_page);
   page_out(curproc->pages[curproc->index_page].va, mem, curproc->pgdir);
   kfree(mem);
 }
@@ -810,7 +810,7 @@ void lru_rec(void)
     pte = walkpgdir(curproc->pgdir , (char*)curproc->pages[i].va , 0);
     if((*pte )& PTE_A)
     {
-      cprintf("%d\n\n", i);
+      // cprintf("%d\n\n", i);
       curproc->pages[i].age = 0;
     }
     else
@@ -819,7 +819,7 @@ void lru_rec(void)
       curproc->pages[i].age++;
     }
     // clear access flag
-    cprintf("aaaaaa%d\n" , curproc->pages[i].age);
+    // cprintf("aaaaaa%d\n" , curproc->pages[i].age);
     *pte = *pte & ~PTE_A;
   }
 }
@@ -840,7 +840,7 @@ void nfu_rec(void)
     pte = walkpgdir(curproc->pgdir , (char*)curproc->pages[i].va , 0);
     if((*pte )& PTE_A)
     {
-      cprintf("%d\n\n", i);
+      // cprintf("%d\n\n", i);
       curproc->pages[i].freq ++;
     }
     else
@@ -849,7 +849,7 @@ void nfu_rec(void)
       // curproc->pages[i].freq = 0;
     }
     // clear access flag
-    cprintf("aaaaaa%d\n" , curproc->pages[i].freq);
+    // cprintf("aaaaaa%d\n" , curproc->pages[i].freq);
     *pte = *pte & ~PTE_A;
   }
 }

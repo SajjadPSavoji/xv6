@@ -88,7 +88,7 @@ trap(struct trapframe *tf)
     break;
 
   case T_PGFLT:
-    cprintf("us: page fault\n");
+    cprintf("page fault ----------------------------\n");
     #ifdef LRU
         // cprintf("first of timer:\n");
         lru_rec();
